@@ -1,3 +1,5 @@
+Superhero EDA - In Progress
+================
 
   - [Introduction](#introduction)
   - [TMDb API](#tmdb-api)
@@ -264,8 +266,28 @@ is in a nice data frame and ready for some exploratory data analysis.
 
 How many superhero movies have been released per year since 1970? Have
 these movies become more profitable over time. I’ll attempt to answer
-these questions with some simple line plots. I’ve also chosen to adjust
-the financial figures for inflation.
+these questions with some simple plots. I’ve also chosen to adjust the
+financial figures for inflation.
+
+``` r
+super_movies %>%
+  mutate(release_year = year(release_date)) %>%
+  filter(release_year < year(Sys.Date())) %>%
+  count(release_year) %>%
+  ggplot(aes(release_year, n)) +
+  geom_line() + geom_point() +
+  scale_y_continuous(breaks = breaks_width(1)) +
+  scale_x_continuous(breaks = breaks_width(5)) +
+  theme(panel.grid.minor.y = element_blank()) +
+  labs(x = "Release Year", title = "Superhero Movies Released by Year")
+```
+
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+There has definitely been an upward trend in superhero movie releases.
+More of these types of films start to pop up around the mid 2000’s. But
+were these newer superhero films more successful than their older
+counterparts?
 
 ``` r
 cpi_data <- read_csv("Data/cpi_data.csv")
@@ -296,21 +318,6 @@ super_summ <- super_movies_adj %>%
             .groups = "drop") %>%
   pivot_longer(cols = contains("med"), names_to = "metric")
 
-super_movies %>%
-  mutate(release_year = year(release_date)) %>%
-  filter(release_year < year(Sys.Date())) %>%
-  count(release_year) %>%
-  ggplot(aes(release_year, n)) +
-  geom_line() + geom_point() +
-  scale_y_continuous(breaks = breaks_width(1)) +
-  scale_x_continuous(breaks = breaks_width(5)) +
-  theme(panel.grid.minor.y = element_blank()) +
-  labs(x = "Release Year", title = "Superhero Movies Released by Year")
-```
-
-![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
-
-``` r
 super_summ %>%
   filter(metric != "med_roi", release_year < year(Sys.Date())) %>%
   ggplot(aes(release_year, value, col = metric)) +
@@ -321,7 +328,7 @@ super_summ %>%
   labs(x = "Release Year", col = "Metric", title = "Median Performance by Year")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-10-2.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 ``` r
 super_summ %>%
@@ -333,100 +340,16 @@ super_summ %>%
   labs(x = "Release Year", y = "ROI", title = "Median ROI by Year")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-10-3.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-11-2.png)<!-- --> There appear
+to be some early superhero films perform great at the box office and
+offered investors some amazing returns. The highest returns seem to be
+held by movies released after 2012. There also appear to be less
+occurrences of annual losses for this genre after 2012. This could be a
+product of studios better understanding how to produce and market these
+types of movies.
 
-There is a noticeable increase in the number of superhero films released
-starting around 2005. Let’s take a look at the financial performance of
-these films to determine if there is a
-
-``` r
-super_summ %>% 
-  group_by(metric) %>% 
-  slice_max(order_by = value, n = 1)
-```
-
-    ## # A tibble: 4 x 3
-    ## # Groups:   metric [4]
-    ##   release_year metric                      value
-    ##          <dbl> <chr>                       <dbl>
-    ## 1         2012 med_budget_inf_adj   263847567.  
-    ## 2         2012 med_profit          1196071096.  
-    ## 3         2012 med_revenue_inf_adj 1459918664.  
-    ## 4         2019 med_roi                      6.07
-
-``` r
-super_movies %>%
-  mutate(release_year = year(release_date)) %>%
-  filter(release_year == 2012)
-```
-
-    ## # A tibble: 6 x 12
-    ##   budget imdb_id original_title title release_date revenue runtime status
-    ##    <int> <chr>   <chr>          <chr> <chr>          <dbl>   <int> <chr> 
-    ## 1 2.20e8 tt0848… The Avengers   The … 2012-04-25    1.52e9     143 Relea…
-    ## 2 2.50e8 tt1345… The Dark Knig… The … 2012-07-16    1.08e9     165 Relea…
-    ## 3 0.     tt1907… Alter Egos     Alte… 2012-07-20    0.          80 Relea…
-    ## 4 0.     tt2367… முகமூடி        Muga… 2012-08-31    0.         162 Relea…
-    ## 5 0.     tt1663… Super Hero Pa… Supe… 2012-09-25    0.          84 Relea…
-    ## 6 0.     tt2980… Sci Fi Sol     Sci … 2012-04-14    0.          47 Relea…
-    ## # … with 4 more variables: vote_average <dbl>, vote_count <int>,
-    ## #   movie_id <int>, release_year <dbl>
-
-``` r
-super_movies_adj %>% 
-  filter(release_year == 2019)
-```
-
-    ## # A tibble: 9 x 17
-    ##   budget imdb_id original_title title release_date revenue runtime status
-    ##    <int> <chr>   <chr>          <chr> <chr>          <dbl>   <int> <chr> 
-    ## 1 1.60e8 tt6320… Spider-Man: F… Spid… 2019-06-28    1.13e9     129 Relea…
-    ## 2 3.56e8 tt4154… Avengers: End… Aven… 2019-04-24    2.80e9     181 Relea…
-    ## 3 1.52e8 tt4154… Captain Marvel Capt… 2019-03-06    1.13e9     124 Relea…
-    ## 4 1.70e8 tt0437… Alita: Battle… Alit… 2019-01-31    4.05e8     122 Relea…
-    ## 5 2.00e8 tt6565… Dark Phoenix   Dark… 2019-06-05    2.52e8     114 Relea…
-    ## 6 8.00e7 tt0448… Shazam!        Shaz… 2019-03-29    3.64e8     132 Relea…
-    ## 7 2.00e7 tt6823… Glass          Glass 2019-01-16    2.47e8     129 Relea…
-    ## 8 0.     tt6902… Guns Akimbo    Guns… 2019-09-09    0.          95 Relea…
-    ## 9 0.     tt1458… 2050           2050  2019-02-14    0.         104 Relea…
-    ## # … with 9 more variables: vote_average <dbl>, vote_count <int>,
-    ## #   movie_id <int>, release_year <dbl>, inf_rate <dbl>, budget_inf_adj <dbl>,
-    ## #   revenue_inf_adj <dbl>, profit <dbl>, roi <dbl>
-
-``` r
-super_movies_adj %>% 
-  arrange(release_year)
-```
-
-    ## # A tibble: 197 x 17
-    ##    budget imdb_id original_title title release_date revenue runtime status
-    ##     <int> <chr>   <chr>          <chr> <chr>          <dbl>   <int> <chr> 
-    ##  1 5.50e7 tt0078… Superman       Supe… 1978-12-13    3.00e8     143 Relea…
-    ##  2 0.     tt3516… Safety Woman:… Safe… 1978-01-01    0.          15 Relea…
-    ##  3 5.40e7 tt0081… Superman II    Supe… 1980-12-04    1.90e8     127 Relea…
-    ##  4 0.     tt0080… Hero at Large  Hero… 1980-02-08    1.59e7      98 Relea…
-    ##  5 0.     tt0461… Super Christi… Supe… 1980-01-01    0.          27 Relea…
-    ##  6 0.     tt0082… Condorman      Cond… 1981-07-02    0.          90 Relea…
-    ##  7 0.     tt0842… Superbman: Th… Supe… 1981-01-01    0.          30 Relea…
-    ##  8 0.     tt0203… Gekko Kamen    The … 1982-11-01    0.          94 Relea…
-    ##  9 3.90e7 tt0086… Superman III   Supe… 1983-06-17    7.59e7     125 Relea…
-    ## 10 5.00e0 tt0086… The Return of… The … 1983-01-01    0.          96 Relea…
-    ## # … with 187 more rows, and 9 more variables: vote_average <dbl>,
-    ## #   vote_count <int>, movie_id <int>, release_year <dbl>, inf_rate <dbl>,
-    ## #   budget_inf_adj <dbl>, revenue_inf_adj <dbl>, profit <dbl>, roi <dbl>
-
-``` r
-super_movies_adj %>% 
-  filter(title == "Batman")
-```
-
-    ## # A tibble: 1 x 17
-    ##   budget imdb_id original_title title release_date revenue runtime status
-    ##    <int> <chr>   <chr>          <chr> <chr>          <dbl>   <int> <chr> 
-    ## 1 3.50e7 tt0096… Batman         Batm… 1989-06-23    4.11e8     126 Relea…
-    ## # … with 9 more variables: vote_average <dbl>, vote_count <int>,
-    ## #   movie_id <int>, release_year <dbl>, inf_rate <dbl>, budget_inf_adj <dbl>,
-    ## #   revenue_inf_adj <dbl>, profit <dbl>, roi <dbl>
+Before I move on to collecting the cast information I’d like to what top
+performing movie of each year was.
 
 ``` r
 super_movies_adj %>% 
@@ -434,21 +357,9 @@ super_movies_adj %>%
   group_by(release_year) %>% 
   slice_max(order_by = roi,
             n = 1) %>% 
-  select(title, budget_inf_adj, profit, roi, release_year)
+  select(title, budget_inf_adj, profit, roi, release_year) %>% 
+  ggplot(aes(release_year, roi)) + geom_col() +
+  coord_flip()
 ```
 
-    ## # A tibble: 37 x 5
-    ## # Groups:   release_year [37]
-    ##    title                            budget_inf_adj    profit    roi release_year
-    ##    <chr>                                     <dbl>     <dbl>  <dbl>        <dbl>
-    ##  1 Superman                             217339532.    9.69e8  4.46          1978
-    ##  2 Superman II                          168915008.    4.27e8  2.53          1980
-    ##  3 Superman III                         100937113.    9.54e7  0.945         1983
-    ##  4 Supergirl                             86849591.   -5.14e7 -0.592         1984
-    ##  5 Superman IV: The Quest for Peace      38567424.    5.22e6  0.135         1987
-    ##  6 How to Draw Comics the Marvel W…        762925.   -7.63e5 -1             1988
-    ##  7 Batman                                72779443.    7.83e8 10.8           1989
-    ##  8 Captain America                       19729155.   -1.97e7 -1             1990
-    ##  9 The Rocketeer                         79495833.    3.79e7  0.476         1991
-    ## 10 Batman Returns                       146969202.    3.67e8  2.5           1992
-    ## # … with 27 more rows
+![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
