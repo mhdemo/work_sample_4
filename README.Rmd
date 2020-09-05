@@ -12,12 +12,12 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 ```
 
 ## Introduction
-It feels as though superhero movies have taken over the box office. It's almost hard to name a popular performer who hasn't had an appearance in at least one film where people can fly or move things with their minds. The goals of this project is dig deeper into the growth of superhero movies and ultimately determine what percentage of popular performers have been in such films. This analysis is extremely subjective, but it does give me a great opportunity to utilize the `purrr` package to automate API calls.
+It feels as though superhero movies have taken over the box office. It's hard to name a popular performer who hasn't appeared in at least one film where people can fly or move things with their minds. The goal of this project is to dig deeper into the growth of superhero movies and ultimately determine what percentage of popular performers have been in such films. This analysis is extremely subjective, but it does give me a great opportunity to utilize the `purrr` package to automate API calls.
 
 All of the code used to conduct this analysis will be available in this repository. More in-depth explanations of the code used will be available in various posts on my website.[https://mhdemoblog.netlify.app/](https://mhdemoblog.netlify.app/)
 
 ## TMDb API 
-All of the data used in this analysis will be queried from The Movie Database. This site offers an API that is free to access with no rate limiting. More information on the TMDb API can be found on their fact page.
+All of the data used in this analysis, will be queried from The Movie Database. This site offers an API that is free to access with no rate limiting. More information on the TMDb API can be found on their fact page.
 
 [TBDb API Documentation](https://www.themoviedb.org/documentation/api)
 
@@ -39,7 +39,7 @@ library(ggfittext)
 Before I can conduct my analysis I will need to query the data using the API. So what's the best way to start?
 
 ### Searching for Keywords
-First I need to find all fo the keywords that contain the word "superhero" and save the ids for those keywords.
+First I need to find all of the keywords that contain the word "superhero" and save the IDS for those keywords.
 ```{r}
 keyword_search <- "superhero"
 
@@ -57,7 +57,7 @@ super_hero_key_ids <- fromJSON(glue("https://api.themoviedb.org/3/search/keyword
 
 ```
 ### Superhero Movie Ids
-Using the keyword ids I can search for any movies that contain those keywords. I just need to determine how many pages of results there are, create a function that queries the individual pages, and use the `map` function to iterate over those pages.
+Using the keyword IDS I can search for any movies that contain those keywords. I just need to determine how many pages of results there are, create a function that queries the individual pages, and use the `map` function to iterate over those pages.
 ```{r}
 # without_genres=16 - removes movies classified as animation
 # with_release_type=3 - filters for theatrical releases
@@ -114,10 +114,10 @@ hero_movie_id %>%
 
 ```
 
-The results from the pages were combined into a single data frame. I then used the `pull` function again to extract a vector containing the movie ids. It looks as though there have been `r length(hero_movie_id)` movies released in American theaters since Jan 1, 1970 that have been classified as being a superhero film.
+The results from the pages were combined into a single data frame. I then used the `pull` function again to extract a vector containing the movie ids. It looks as though there have been `r length(hero_movie_id)` movies released in American theaters since Jan 1, 1970 that have been classified as superhero films.
 
 ### Movie Details
-I could use the rest of the data found in the discover API call, but I want to know more. Have the budgets for superhero movies changed since 1970? Have they become more profitable? Additional information on how these movies performed can be found using a slightly different API call. Querying the data requires a similar process as collecting all of the movie ids.
+I could use the rest of the data found in the discover API call, but I want to know more. Have the budgets for superhero movies changed since 1970? Have they become more profitable? Additional information on these movies' cost and performance can be found using a slightly different API call. Querying the data requires a similar process as collecting all of the movie IDS.
 
 ```{r}
 super_detail_query <-  function(movie_id) {
@@ -131,7 +131,7 @@ super_detail_query(hero_movie_id[1]) %>%
 
 ```
 
-Wow! This list contains a combination of lists and data frames. I can see some fields that I'm interested in such as `budget` and `vote_average`. I just need to map over the movie ids and transform these list elements into a single data frame.
+Wow! This list contains a combination of lists and data frames. I can see some fields that I'm interested in, such as `budget` and `vote_average`. I just need to map over the movie IDS and transform these list elements into a single data frame.
 
 ```{r, eval=TRUE}
 super_movies <- map(hero_movie_id,
@@ -154,10 +154,10 @@ super_movies %>%
 
 ```
 
-This looks way easier to interpret. All of the information that I want is in a nice data frame and ready for some exploratory data analysis.
+This looks much easier to interpret. All of the information that I want is in a nice data frame and ready for some exploratory data analysis.
 
 ## Super Analysis
-How many superhero movies have been released per year since 1970? Have these movies become more profitable over time. I'll attempt to answer these questions with some simple plots. I've also chosen to adjust the financial figures for inflation.
+How many superhero movies have been released per year since 1970? Have these movies become more profitable over time? I'll attempt to answer these questions with some simple plots. I've also chosen to adjust the financial figures for inflation.
 
 ```{r}
 super_movies %>%
@@ -173,7 +173,7 @@ super_movies %>%
 
 ```
 
-There has definitely been an upward trend in superhero movie releases. More of these types of films start to pop up around the mid 2000's. But were these newer superhero films more successful than their older counterparts?
+There has definitely been an upward trend in the number of superhero movies released per year. More of these types of films start to pop up around the mid 2000s. But were these newer superhero films more successful than their older counterparts?
 
 ```{r, message=FALSE}
 cpi_data <- read_csv("Data/cpi_data.csv")
@@ -221,9 +221,9 @@ super_summ %>%
   scale_y_continuous(labels = percent) +
   labs(x = "Release Year", y = "ROI", title = "Median ROI by Year")
 ```
-There appear to be some early superhero films perform great at the box office and offered investors some amazing returns. The highest returns seem to be held by movies released after 2012. There also appear to be less occurrences of annual losses for this genre after 2012. This could be a product of studios better understanding how to produce and market these types of movies.
+There appear to be some early superhero films that performed great at the box office and offered investors some amazing returns. However, the highest returns seem to be held by movies released after 2012. There also appear to be less occurrences of annual losses for this genre after 2012. This could be a product of studios' improved understanding of how to produce and market these types of movies.
 
-Before I move on to collecting the cast information I'd like to what top performing movie of each decade was.
+Before I move on to collecting the cast information, I'd like to know what the top performing movie of each decade was.
 
 ```{r}
 super_movies_adj %>% 
@@ -240,4 +240,4 @@ super_movies_adj %>%
 
 ```
 
-This plot is pretty interesting. <i>Avengers: Endgame</i> is by far the greatest superhero success at the box office but 1989's <i>Batman</i> offered investors a higher rate of return at a whopping 1,075 % ROI. So far the 2020's have only shown negative returns for superhero films at the time of this analysis.
+This plot is pretty interesting. <i>Avengers: Endgame</i> is by far the greatest superhero success at the box office, but 1989's <i>Batman</i> offered investors a higher rate of return at a whopping 1,075 % ROI. The 2020s have only shown negative returns for superhero films at the time of this analysis.
