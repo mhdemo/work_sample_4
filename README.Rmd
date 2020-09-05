@@ -7,7 +7,8 @@ output:
 
 ```{r setup, include=FALSE}
 # Used when working on the analysis to speed up the knit process
-# super_movies <- readRDS("Data/superMovies.RDS")
+super_movies <- readRDS("Data/superMovies.RDS")
+super_cast <- readRDS("Data/super_cast.RDS")
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 ```
 
@@ -35,7 +36,7 @@ library(ggfittext)
 ```
 
 
-## The Queries Pt.1
+## The Queries Pt 1
 Before I can conduct my analysis I will need to query the data using the API. So what's the best way to start?
 
 ### Searching for Keywords
@@ -133,7 +134,7 @@ super_detail_query(hero_movie_id[1]) %>%
 
 Wow! This list contains a combination of lists and data frames. I can see some fields that I'm interested in, such as `budget` and `vote_average`. I just need to map over the movie IDS and transform these list elements into a single data frame.
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 super_movies <- map(hero_movie_id,
                         ~super_detail_query(.x)) %>%
   map_df(~as_tibble(t(.x))) %>%
@@ -141,10 +142,11 @@ super_movies <- map(hero_movie_id,
          release_date, revenue, runtime, status, vote_average,
          vote_count, id) %>%
   unnest(cols = everything()) %>%
-  rename(movie_id = id)
+  rename(movie_id = id) %>% 
+  mutate(release_date = date(release_date))
 
 # Used when working on the analysis to speed up the knit process
-#saveRDS(super_movies, "Data/superMovies.RDS")
+# saveRDS(super_movies, "Data/superMovies.RDS")
 
 ```
 
@@ -220,6 +222,7 @@ super_summ %>%
   scale_x_continuous(breaks = breaks_width(5)) +
   scale_y_continuous(labels = percent) +
   labs(x = "Release Year", y = "ROI", title = "Median ROI by Year")
+
 ```
 There appear to be some early superhero films that performed great at the box office and offered investors some amazing returns. However, the highest returns seem to be held by movies released after 2012. There also appear to be less occurrences of annual losses for this genre after 2012. This could be a product of studios' improved understanding of how to produce and market these types of movies.
 
@@ -237,7 +240,76 @@ super_movies_adj %>%
   scale_y_continuous(labels = dollar) +
   labs(x = "Decade", y = "Profit")
 
-
 ```
 
 This plot is pretty interesting. <i>Avengers: Endgame</i> is by far the greatest superhero success at the box office, but 1989's <i>Batman</i> offered investors a higher rate of return at a whopping 1,075 % ROI. The 2020s have only shown negative returns for superhero films at the time of this analysis.
+
+## The Queries Pt 2
+The movie data that I’ve collected so far is great, but it lacks any information on the cast for each film. I’ll have to use a slightly different set of API calls to collect all of the cast listing for the movies I’ve identified. 
+
+```{r, eval=FALSE}
+cast_query <- function(movie_id) {
+  
+  fromJSON(glue("https://api.themoviedb.org/3/movie/{movie_id}\\
+                /credits?api_key={Sys.getenv('THE_MOVIE_DB_KEY')}"))
+}
+
+super_cc <- map(hero_movie_id, ~cast_query(.x))
+
+super_cast <- super_cc %>% 
+  map_df(~as_tibble(t(.x))) %>% 
+  select(-crew) %>% 
+  unnest(c(id, cast), names_repair = "unique") %>% 
+  rename(movie_id = 1, performer_id = 6, performer = 7) %>% 
+  select(movie_id:order)
+
+# Used when working on the analysis to speed up the knit process
+# saveRDS(super_cast, "Data/super_cast.RDS")
+# rm(super_cc)
+
+```
+
+Now that I have the cast data I can join it together with the rest of the movie data.
+
+```{r}
+super_data <- super_cast %>% 
+  left_join(super_movies_adj,
+            by = "movie_id") %>% 
+  relocate(movie_id, title, budget_inf_adj, revenue_inf_adj, profit, character)
+
+```
+
+
+Before I move on to the last step, I'd like to answer a couple more questions. First up, what performer has been in the most superhero movies? This question should be pretty easy to answer for any MCU fan.
+
+```{r}
+super_data %>% 
+  count(performer) %>% 
+  arrange(desc(n)) %>% 
+  head()
+
+super_data %>% 
+  filter(performer == "Stan Lee") %>% 
+  slice_max(order_by = release_date, n = 1) %>% 
+  select(title, release_date, performer, character)
+```
+
+
+Stan Lee has made a cameo in nearly every Marvel film with his last being <i>Avengers: Endgame</i>. His cameos were always a great touch in the films. The other performers below Mr. Lee in appearances makes sense except for one. Who is this Jimmy Star guy? If I dig a little deeper I might be able to find out.
+
+```{r}
+jimmy_credits <- pluck(fromJSON(glue("https://api.themoviedb.org/3\\
+                               /person/1781358/movie_credits?\\
+                               api_key={Sys.getenv('THE_MOVIE_DB_KEY')}&\\
+                               language=en-US")), 1)
+
+nrow(jimmy_credits)
+
+jimmy_credits %>% 
+  arrange(desc(vote_average)) %>% 
+  select(title, release_date, character, vote_average) %>% 
+  head()
+
+```
+
+Mr. Star appears to be a very active extra. He's had 12 appearances to date in superhero films and 86 across all genres! Above are the top five movies that he's appeared in by vote average.
