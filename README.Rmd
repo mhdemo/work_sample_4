@@ -6,7 +6,8 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-super_movies <- readRDS("Data/superMovies.RDS")
+# Used when working on the analysis to speed up the knit process
+# super_movies <- readRDS("Data/superMovies.RDS")
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 ```
 
@@ -29,6 +30,7 @@ library(janitor)
 library(lubridate)
 library(scales)
 library(patchwork)
+library(ggfittext)
 
 ```
 
@@ -100,7 +102,7 @@ sh_movies_p1 <- super_discover_query(1) %>%
 
 ```
 
-The function appears to work as the first two movies visible from the `title` column are "`r sh_movies_p1[1]`" and "`r sh_movies_p1[2]`". Next up is the iteration.
+The function appears to work as the first two movies visible from the `title` column are <i>`r sh_movies_p1[1]`</i> and <i>`r sh_movies_p1[2]`</i>. Next up is the iteration.
 
 ```{r}
 hero_movie_id <- map_df(1:page_count,
@@ -131,7 +133,7 @@ super_detail_query(hero_movie_id[1]) %>%
 
 Wow! This list contains a combination of lists and data frames. I can see some fields that I'm interested in such as `budget` and `vote_average`. I just need to map over the movie ids and transform these list elements into a single data frame.
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 super_movies <- map(hero_movie_id,
                         ~super_detail_query(.x)) %>%
   map_df(~as_tibble(t(.x))) %>%
@@ -140,6 +142,9 @@ super_movies <- map(hero_movie_id,
          vote_count, id) %>%
   unnest(cols = everything()) %>%
   rename(movie_id = id)
+
+# Used when working on the analysis to speed up the knit process
+#saveRDS(super_movies, "Data/superMovies.RDS")
 
 ```
 
@@ -218,17 +223,21 @@ super_summ %>%
 ```
 There appear to be some early superhero films perform great at the box office and offered investors some amazing returns. The highest returns seem to be held by movies released after 2012. There also appear to be less occurrences of annual losses for this genre after 2012. This could be a product of studios better understanding how to produce and market these types of movies.
 
-Before I move on to collecting the cast information I'd like to what top performing movie of each year was.
+Before I move on to collecting the cast information I'd like to what top performing movie of each decade was.
 
 ```{r}
 super_movies_adj %>% 
-  filter(budget > 100000) %>% 
-  group_by(release_year) %>% 
-  slice_max(order_by = roi,
+  filter(budget > 100000, release_date < Sys.Date()) %>% 
+  mutate(decade = glue("{release_year - (release_year %% 10)}'s")) %>% 
+  group_by(decade) %>% 
+  slice_max(order_by = profit,
             n = 1) %>% 
-  select(title, budget_inf_adj, profit, roi, release_year) %>% 
-  ggplot(aes(release_year, roi)) + geom_col() +
-  coord_flip()
+  ggplot(aes(decade, profit, label = glue("{title}\n{percent(roi)} ROI"))) + geom_col() +
+  geom_bar_text(reflow = TRUE) +
+  scale_y_continuous(labels = dollar) +
+  labs(x = "Decade", y = "Profit")
+
 
 ```
 
+This plot is pretty interesting. <i>Avengers: Endgame</i> is by far the greatest superhero success at the box office but 1989's <i>Batman</i> offered investors a higher rate of return at a whopping 1,075 % ROI. So far the 2020's have only shown negative returns for superhero films at the time of this analysis.
