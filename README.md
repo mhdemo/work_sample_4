@@ -2,6 +2,7 @@ Superhero EDA - In Progress
 ================
 
   - [Introduction](#introduction)
+  - [tl;dr](#tldr)
   - [TMDb API](#tmdb-api)
   - [Packages](#packages)
   - [The Queries Pt 1](#the-queries-pt-1)
@@ -26,6 +27,12 @@ All of the code used to conduct this analysis will be available in this
 repository. More in-depth explanations of the code used will be
 available in various posts on my
 website.<https://mhdemoblog.netlify.app/>
+
+## tl;dr
+
+Superhero movies have become more expensive, profitable, and abundant
+over the last 15 years. Nearly 1 in every 3 active famous actors has
+been in a superhero movie. Stan Lee was a very busy man.
 
 ## TMDb API
 
@@ -518,17 +525,17 @@ pop_actors %>%
   slice_sample(n = 10)
 ```
 
-    ##    popularity known_for_department             name
-    ## 1       2.696               Acting    Ramon Novarro
-    ## 2       3.495               Acting   Aleksey Chadov
-    ## 3       2.256               Acting   Charles Cioffi
-    ## 4       3.632               Acting     Bella Ramsey
-    ## 5       2.100               Acting      Brion James
-    ## 6       3.936               Acting  Cybill Shepherd
-    ## 7       4.865               Acting Leon Allen White
-    ## 8       2.656               Acting      Jacque Gray
-    ## 9       2.303               Acting         Sam Page
-    ## 10      3.152               Acting    Jeanne Moreau
+    ##    popularity known_for_department                  name
+    ## 1       2.477               Acting           Carla Salle
+    ## 2       3.681               Acting    Kimberlee Peterson
+    ## 3       3.272               Acting        Carmen Electra
+    ## 4       2.500               Acting            Tim Guinee
+    ## 5       2.891               Acting        Gözde Kocaoğlu
+    ## 6       2.943               Acting           Clu Gulager
+    ## 7       2.325               Acting       Bumper Robinson
+    ## 8       2.101               Acting William Chan Wai-Ting
+    ## 9       2.324               Acting          Benjie Paras
+    ## 10      2.240               Acting          Richard Egan
 
 This list is great but it contains some popular people that I don’t
 want. I only want to focus current, popular, movie actors. I decided to
@@ -568,18 +575,18 @@ top_pop_perf %>%
 ```
 
     ## # A tibble: 10 x 2
-    ##    actor               actor_id
-    ##    <chr>                  <int>
-    ##  1 Michael B. Jordan     135651
-    ##  2 Jodie Whittaker        66431
-    ##  3 Matthew McConaughey    10297
-    ##  4 David Warshofsky       37204
-    ##  5 Katherine Heigl        25541
-    ##  6 Nick Robinson        1108907
-    ##  7 Britt Robertson        52018
-    ##  8 Meredith Salenger      18706
-    ##  9 Rose McIver            53485
-    ## 10 Kevin Costner           1269
+    ##    actor            actor_id
+    ##    <chr>               <int>
+    ##  1 Robert Redford       4135
+    ##  2 Elizabeth Olsen    550843
+    ##  3 Trish Stratus      238367
+    ##  4 Rosa Salazar       973667
+    ##  5 Monique Coleman    180279
+    ##  6 Josh Stamberg       21882
+    ##  7 Brenton Thwaites  1017347
+    ##  8 Blake Lively        59175
+    ##  9 Bill Nighy           2440
+    ## 10 Richard Harmon     144852
 
 After filtering I’ve narrowed the pool down to the top 734 actors. A
 sample of this pool should show more recognizable names.
@@ -603,23 +610,23 @@ non_supers %>%
 ```
 
     ## # A tibble: 15 x 2
-    ##    actor                  actor_id
-    ##    <chr>                     <int>
-    ##  1 Josh Duhamel              19536
-    ##  2 Christina Hendricks      110014
-    ##  3 Lisa Kudrow               14406
-    ##  4 Paul Anderson            220448
-    ##  5 Ashlynn Yennie           121575
-    ##  6 Benjamin Hollingsworth    77865
-    ##  7 Richard Harmon           144852
-    ##  8 D.B. Woodside             21356
-    ##  9 Jessica Hecht             14984
-    ## 10 Alexis Hollins          1316197
-    ## 11 Gillian Anderson          12214
-    ## 12 Kaya Scodelario          115150
-    ## 13 Dallas Roberts              424
-    ## 14 Eddie Redmayne            37632
-    ## 15 Cody Christian           219664
+    ##    actor             actor_id
+    ##    <chr>                <int>
+    ##  1 Dylan Minnette      112476
+    ##  2 Helen Mirren         15735
+    ##  3 Jessie T. Usher     198847
+    ##  4 Robert Forster        5694
+    ##  5 Mary Mouser        1223084
+    ##  6 David Schwimmer      14409
+    ##  7 Hermione Corfield  1345419
+    ##  8 Julia Winter          1286
+    ##  9 Odette Annable       51992
+    ## 10 Lee Byung-hun        25002
+    ## 11 Natalie Martinez     76511
+    ## 12 Thomas Elms        1780950
+    ## 13 Rachelle Lefevre     58168
+    ## 14 Jake Choi          1474019
+    ## 15 Geraldine James      11855
 
 ``` r
 top_pop_perf %>% 
@@ -627,11 +634,11 @@ top_pop_perf %>%
 ```
 
     ## # A tibble: 3 x 2
-    ##   actor             actor_id
-    ##   <chr>                <int>
-    ## 1 Keri Russell         41292
-    ## 2 Danielle Campbell   114372
-    ## 3 William Shatner       1748
+    ##   actor           actor_id
+    ##   <chr>              <int>
+    ## 1 Ben Mendelsohn     77335
+    ## 2 James Frain        22063
+    ## 3 Anthony Hopkins     4173
 
 After a little work I have my very rough estimate of how many popular
 actors have been in a superhero film, 31%. So roughly 1 out of every 3

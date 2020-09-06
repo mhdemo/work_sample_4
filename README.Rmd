@@ -9,11 +9,13 @@ output:
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 ```
 
-
 ## Introduction
 It feels as though superhero movies have taken over the box office. It's hard to name a popular actor who hasn't appeared in at least one film where people can fly or move things with their minds. The goal of this project is to dig deeper into the growth of superhero movies and ultimately determine what percentage of popular actors have been in such films. This analysis is extremely subjective, but it does give me a great opportunity to utilize the `purrr` package to automate API calls.
 
 All of the code used to conduct this analysis will be available in this repository. More in-depth explanations of the code used will be available in various posts on my website.[https://mhdemoblog.netlify.app/](https://mhdemoblog.netlify.app/)
+
+## tl;dr
+Superhero movies have become more expensive, profitable, and abundant over the last 15 years. Nearly 1 in every 3 active famous actors has been in a superhero movie. Stan Lee was a very busy man.
 
 ## TMDb API 
 All of the data used in this analysis, will be queried from The Movie Database. This site offers an API that is free to access with no rate limiting. More information on the TMDb API can be found on their fact page.
