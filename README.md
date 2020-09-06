@@ -518,17 +518,17 @@ pop_actors %>%
   slice_sample(n = 10)
 ```
 
-    ##    popularity known_for_department              name
-    ## 1       5.644               Acting        Sammo Hung
-    ## 2       3.850               Acting   Edvin Adolphson
-    ## 3       2.283               Acting     Joey Lawrence
-    ## 4       5.835               Acting Haley Joel Osment
-    ## 5       6.640               Acting     Wesley Snipes
-    ## 6       6.964               Acting      Peter Benson
-    ## 7       2.730               Acting         Teri Polo
-    ## 8       3.114            Directing   Jonathan Kaplan
-    ## 9       4.482            Directing Richard Linklater
-    ## 10      2.624               Acting      Julia Garner
+    ##    popularity known_for_department             name
+    ## 1       2.696               Acting    Ramon Novarro
+    ## 2       3.495               Acting   Aleksey Chadov
+    ## 3       2.256               Acting   Charles Cioffi
+    ## 4       3.632               Acting     Bella Ramsey
+    ## 5       2.100               Acting      Brion James
+    ## 6       3.936               Acting  Cybill Shepherd
+    ## 7       4.865               Acting Leon Allen White
+    ## 8       2.656               Acting      Jacque Gray
+    ## 9       2.303               Acting         Sam Page
+    ## 10      3.152               Acting    Jeanne Moreau
 
 This list is great but it contains some popular people that I don’t
 want. I only want to focus current, popular, movie actors. I decided to
@@ -568,18 +568,18 @@ top_pop_perf %>%
 ```
 
     ## # A tibble: 10 x 2
-    ##    actor                 actor_id
-    ##    <chr>                    <int>
-    ##  1 Nicholas Hoult            3292
-    ##  2 Daniel Craig              8784
-    ##  3 Danai Gurira             82104
-    ##  4 Tom Cruise                 500
-    ##  5 Nikolaj Coster-Waldau    12795
-    ##  6 Charles Dance             4391
-    ##  7 Scarlett Johansson        1245
-    ##  8 Selena Gomez             77948
-    ##  9 Sofia Carson           1331457
-    ## 10 Liam Cunningham          15498
+    ##    actor               actor_id
+    ##    <chr>                  <int>
+    ##  1 Michael B. Jordan     135651
+    ##  2 Jodie Whittaker        66431
+    ##  3 Matthew McConaughey    10297
+    ##  4 David Warshofsky       37204
+    ##  5 Katherine Heigl        25541
+    ##  6 Nick Robinson        1108907
+    ##  7 Britt Robertson        52018
+    ##  8 Meredith Salenger      18706
+    ##  9 Rose McIver            53485
+    ## 10 Kevin Costner           1269
 
 After filtering I’ve narrowed the pool down to the top 734 actors. A
 sample of this pool should show more recognizable names.
@@ -605,26 +605,38 @@ non_supers %>%
     ## # A tibble: 15 x 2
     ##    actor                  actor_id
     ##    <chr>                     <int>
-    ##  1 Dylan Kingwell          1435838
-    ##  2 Lola Flanery            1475744
-    ##  3 Laura Ramsey              51975
-    ##  4 Timothy Olyphant          18082
-    ##  5 Bill Nighy                 2440
-    ##  6 Ginnifer Goodwin            417
-    ##  7 Morfydd Clark           1321628
-    ##  8 David Strathairn          11064
-    ##  9 David Suchet              20277
-    ## 10 Cole Sprouse              56730
-    ## 11 Frances Sholto-Douglas  1883295
-    ## 12 James Frain               22063
-    ## 13 Carmen Ejogo              37158
-    ## 14 Hermione Corfield       1345419
-    ## 15 Justin Timberlake         12111
+    ##  1 Josh Duhamel              19536
+    ##  2 Christina Hendricks      110014
+    ##  3 Lisa Kudrow               14406
+    ##  4 Paul Anderson            220448
+    ##  5 Ashlynn Yennie           121575
+    ##  6 Benjamin Hollingsworth    77865
+    ##  7 Richard Harmon           144852
+    ##  8 D.B. Woodside             21356
+    ##  9 Jessica Hecht             14984
+    ## 10 Alexis Hollins          1316197
+    ## 11 Gillian Anderson          12214
+    ## 12 Kaya Scodelario          115150
+    ## 13 Dallas Roberts              424
+    ## 14 Eddie Redmayne            37632
+    ## 15 Cody Christian           219664
+
+``` r
+top_pop_perf %>% 
+  slice_sample(n = 3)
+```
+
+    ## # A tibble: 3 x 2
+    ##   actor             actor_id
+    ##   <chr>                <int>
+    ## 1 Keri Russell         41292
+    ## 2 Danielle Campbell   114372
+    ## 3 William Shatner       1748
 
 After a little work I have my very rough estimate of how many popular
-actors have been in a superhero film, 31%. That’s a big chunk but still
-smaller than I though it would be. Throughout this process I noticed
-some exceptions that seemed to crop up. Eva Mendes is categorized as a
-non-super but she starred in 2007’s <i>Ghost Rider</i>, which isn’t
-designated as a superhero film. Subjective factors like this have
-influenced every facet of this analysis.
+actors have been in a superhero film, 31%. So roughly 1 out of every 3
+popular actors is a pretty big proportion. Throughout this process I
+noticed some exceptions that seemed to crop up. Eva Mendes is
+categorized as a non-super but she starred in 2007’s <i>Ghost Rider</i>,
+which isn’t designated as a superhero film. Subjective factors like this
+have influenced every facet of this analysis.
