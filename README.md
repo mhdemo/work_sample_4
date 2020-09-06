@@ -518,17 +518,17 @@ pop_actors %>%
   slice_sample(n = 10)
 ```
 
-    ##    popularity known_for_department            name
-    ## 1       6.780               Acting  Elisabeth Moss
-    ## 2       2.283            Directing    Robert Vince
-    ## 3       3.652               Acting       Smith Cho
-    ## 4       2.177               Acting Helena Mattsson
-    ## 5       2.054               Acting    John Jarratt
-    ## 6       3.178               Acting    Eddie Albert
-    ## 7       2.356               Acting Chiara Mastalli
-    ## 8       6.235               Acting  Timothy Dalton
-    ## 9       4.398               Acting           Ice-T
-    ## 10      8.711               Acting   Steve Buscemi
+    ##    popularity known_for_department              name
+    ## 1       5.644               Acting        Sammo Hung
+    ## 2       3.850               Acting   Edvin Adolphson
+    ## 3       2.283               Acting     Joey Lawrence
+    ## 4       5.835               Acting Haley Joel Osment
+    ## 5       6.640               Acting     Wesley Snipes
+    ## 6       6.964               Acting      Peter Benson
+    ## 7       2.730               Acting         Teri Polo
+    ## 8       3.114            Directing   Jonathan Kaplan
+    ## 9       4.482            Directing Richard Linklater
+    ## 10      2.624               Acting      Julia Garner
 
 This list is great but it contains some popular people that I don’t
 want. I only want to focus current, popular, movie actors. I decided to
@@ -568,18 +568,18 @@ top_pop_perf %>%
 ```
 
     ## # A tibble: 10 x 2
-    ##    actor             actor_id
-    ##    <chr>                <int>
-    ##  1 Danny Huston          6413
-    ##  2 Ryan Reynolds        10859
-    ##  3 James Frain          22063
-    ##  4 Robert Pattinson     11288
-    ##  5 Dan Castellaneta       198
-    ##  6 Dustin Hoffman        4483
-    ##  7 Thomasin McKenzie  1356758
-    ##  8 Dolph Lundgren       16644
-    ##  9 Idris Elba           17605
-    ## 10 Sienna Miller        23459
+    ##    actor                 actor_id
+    ##    <chr>                    <int>
+    ##  1 Nicholas Hoult            3292
+    ##  2 Daniel Craig              8784
+    ##  3 Danai Gurira             82104
+    ##  4 Tom Cruise                 500
+    ##  5 Nikolaj Coster-Waldau    12795
+    ##  6 Charles Dance             4391
+    ##  7 Scarlett Johansson        1245
+    ##  8 Selena Gomez             77948
+    ##  9 Sofia Carson           1331457
+    ## 10 Liam Cunningham          15498
 
 After filtering I’ve narrowed the pool down to the top 734 actors. A
 sample of this pool should show more recognizable names.
@@ -603,25 +603,25 @@ non_supers %>%
 ```
 
     ## # A tibble: 15 x 2
-    ##    actor             actor_id
-    ##    <chr>                <int>
-    ##  1 Agata Buzek          37982
-    ##  2 Yeardley Smith        5586
-    ##  3 Meredith Salenger    18706
-    ##  4 Ana de Armas        224513
-    ##  5 Scott Menville      113916
-    ##  6 Peter Gadiot       1035905
-    ##  7 Madison Riley       101565
-    ##  8 Rebecca Ferguson    933238
-    ##  9 Katie McGrath       150587
-    ## 10 Ashley Greene        45827
-    ## 11 Charlie Day          95101
-    ## 12 Peter Benson          5009
-    ## 13 Channing Tatum       38673
-    ## 14 Sofia Carson       1331457
-    ## 15 Mira Filzah        1783272
+    ##    actor                  actor_id
+    ##    <chr>                     <int>
+    ##  1 Dylan Kingwell          1435838
+    ##  2 Lola Flanery            1475744
+    ##  3 Laura Ramsey              51975
+    ##  4 Timothy Olyphant          18082
+    ##  5 Bill Nighy                 2440
+    ##  6 Ginnifer Goodwin            417
+    ##  7 Morfydd Clark           1321628
+    ##  8 David Strathairn          11064
+    ##  9 David Suchet              20277
+    ## 10 Cole Sprouse              56730
+    ## 11 Frances Sholto-Douglas  1883295
+    ## 12 James Frain               22063
+    ## 13 Carmen Ejogo              37158
+    ## 14 Hermione Corfield       1345419
+    ## 15 Justin Timberlake         12111
 
-After a little work I’ve have my very rough estimate of how many popular
+After a little work I have my very rough estimate of how many popular
 actors have been in a superhero film, 31%. That’s a big chunk but still
 smaller than I though it would be. Throughout this process I noticed
 some exceptions that seemed to crop up. Eva Mendes is categorized as a

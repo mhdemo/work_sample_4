@@ -368,4 +368,4 @@ non_supers %>%
 ```
 
 
-After a little work I've have my very rough estimate of how many popular actors have been in a superhero film, `r super_perc`. That's a big chunk but still smaller than I though it would be. Throughout this process I noticed some exceptions that seemed to crop up. Eva Mendes is categorized as a non-super but she starred in 2007's <i>Ghost Rider</i>, which isn't designated as a superhero film. Subjective factors like this have influenced every facet of this analysis.
+After a little work I have my very rough estimate of how many popular actors have been in a superhero film, `r super_perc`. That's a big chunk but still smaller than I though it would be. Throughout this process I noticed some exceptions that seemed to crop up. Eva Mendes is categorized as a non-super but she starred in 2007's <i>Ghost Rider</i>, which isn't designated as a superhero film. Subjective factors like this have influenced every facet of this analysis.
