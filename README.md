@@ -10,15 +10,16 @@ Superhero EDA - In Progress
       - [Movie Details](#movie-details)
   - [Super Analysis](#super-analysis)
   - [The Queries Pt 2](#the-queries-pt-2)
+  - [The Finale](#the-finale)
 
 ## Introduction
 
 It feels as though superhero movies have taken over the box office. It’s
-hard to name a popular performer who hasn’t appeared in at least one
-film where people can fly or move things with their minds. The goal of
-this project is to dig deeper into the growth of superhero movies and
-ultimately determine what percentage of popular performers have been in
-such films. This analysis is extremely subjective, but it does give me a
+hard to name a popular actor who hasn’t appeared in at least one film
+where people can fly or move things with their minds. The goal of this
+project is to dig deeper into the growth of superhero movies and
+ultimately determine what percentage of popular actors have been in such
+films. This analysis is extremely subjective, but it does give me a
 great opportunity to utilize the `purrr` package to automate API calls.
 
 All of the code used to conduct this analysis will be available in this
@@ -46,6 +47,7 @@ library(lubridate)
 library(scales)
 library(patchwork)
 library(ggfittext)
+library(xfun)
 ```
 
 ## The Queries Pt 1
@@ -128,24 +130,24 @@ super_discover_query(1) %>%
 
     ## Rows: 20
     ## Columns: 14
-    ## $ popularity        <dbl> 226.101, 209.943, 206.434, 205.109, 174.033, 140.46…
-    ## $ vote_count        <int> 116, 15854, 3072, 19551, 14852, 8235, 10002, 9560, …
+    ## $ popularity        <dbl> 289.008, 269.791, 227.186, 222.109, 209.604, 171.81…
+    ## $ vote_count        <int> 3080, 135, 19557, 15870, 14867, 8243, 10008, 5601, …
     ## $ video             <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FA…
-    ## $ poster_path       <chr> "/45FNxAIooJFqjsVaCJts9YJHXS4.jpg", "/uxzzxijgPIY7s…
-    ## $ id                <int> 340102, 284054, 338762, 299536, 299534, 429617, 299…
+    ## $ poster_path       <chr> "/8WUVHemHFH2ZIP6NWkwlHWsyrEL.jpg", "/45FNxAIooJFqj…
+    ## $ id                <int> 338762, 340102, 299536, 284054, 299534, 429617, 299…
     ## $ adult             <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FA…
-    ## $ backdrop_path     <chr> "/eCIvqa3QVCx6H09bdeOS8Al2Sqy.jpg", "/6ELJEzQJ3Y45H…
+    ## $ backdrop_path     <chr> "/lP5eKh8WOcPysfELrUpGhHJGZEH.jpg", "/eCIvqa3QVCx6H…
     ## $ original_language <chr> "en", "en", "en", "en", "en", "en", "en", "en", "en…
-    ## $ original_title    <chr> "The New Mutants", "Black Panther", "Bloodshot", "A…
-    ## $ genre_ids         <list> [<28, 12, 27, 878>, <28, 12, 14, 878>, <28, 878>, …
-    ## $ title             <chr> "The New Mutants", "Black Panther", "Bloodshot", "A…
-    ## $ vote_average      <dbl> 6.0, 7.4, 7.0, 8.3, 8.3, 7.5, 7.0, 6.2, 7.6, 7.1, 7…
-    ## $ overview          <chr> "Five young mutants, just discovering their abiliti…
-    ## $ release_date      <chr> "2020-08-28", "2018-02-16", "2020-03-13", "2018-04-…
+    ## $ original_title    <chr> "Bloodshot", "The New Mutants", "Avengers: Infinity…
+    ## $ genre_ids         <list> [<28, 878>, <28, 12, 27, 878>, <28, 12, 878>, <28,…
+    ## $ title             <chr> "Bloodshot", "The New Mutants", "Avengers: Infinity…
+    ## $ vote_average      <dbl> 7.0, 6.0, 8.3, 7.4, 8.3, 7.5, 7.0, 7.1, 7.0, 6.7, 6…
+    ## $ overview          <chr> "After he and his wife are murdered, marine Ray Gar…
+    ## $ release_date      <chr> "2020-03-13", "2020-08-28", "2018-04-27", "2018-02-…
 
 The function appears to work as the first two movies visible from the
-`title` column are <i>The New Mutants</i> and <i>Black Panther</i>. Next
-up is the iteration.
+`title` column are <i>Bloodshot</i> and <i>The New Mutants</i>. Next up
+is the iteration.
 
 ``` r
 hero_movie_id <- map_df(1:page_count,
@@ -156,7 +158,7 @@ hero_movie_id %>%
   glimpse()
 ```
 
-    ##  int [1:197] 340102 284054 338762 299536 299534 429617 299537 141052 284053 399579 ...
+    ##  int [1:197] 338762 340102 299536 284054 299534 429617 299537 399579 287947 335983 ...
 
 The results from the pages were combined into a single data frame. I
 then used the `pull` function again to extract a vector containing the
@@ -186,40 +188,40 @@ super_detail_query(hero_movie_id[1]) %>%
 
     ## List of 25
     ##  $ adult                : logi FALSE
-    ##  $ backdrop_path        : chr "/eCIvqa3QVCx6H09bdeOS8Al2Sqy.jpg"
+    ##  $ backdrop_path        : chr "/lP5eKh8WOcPysfELrUpGhHJGZEH.jpg"
     ##  $ belongs_to_collection: NULL
-    ##  $ budget               : int 67000000
-    ##  $ genres               :'data.frame':   4 obs. of  2 variables:
-    ##   ..$ id  : int [1:4] 28 878 27 12
-    ##   ..$ name: chr [1:4] "Action" "Science Fiction" "Horror" "Adventure"
-    ##  $ homepage             : chr "https://www.foxmovies.com/movies/the-new-mutants"
-    ##  $ id                   : int 340102
-    ##  $ imdb_id              : chr "tt4682266"
+    ##  $ budget               : int 42000000
+    ##  $ genres               :'data.frame':   2 obs. of  2 variables:
+    ##   ..$ id  : int [1:2] 28 878
+    ##   ..$ name: chr [1:2] "Action" "Science Fiction"
+    ##  $ homepage             : chr "https://www.bloodshot.movie/"
+    ##  $ id                   : int 338762
+    ##  $ imdb_id              : chr "tt1634106"
     ##  $ original_language    : chr "en"
-    ##  $ original_title       : chr "The New Mutants"
-    ##  $ overview             : chr "Five young mutants, just discovering their abilities while held in a secret facility against their will, fight "| __truncated__
-    ##  $ popularity           : num 226
-    ##  $ poster_path          : chr "/45FNxAIooJFqjsVaCJts9YJHXS4.jpg"
-    ##  $ production_companies :'data.frame':   3 obs. of  4 variables:
-    ##   ..$ id            : int [1:3] 7505 127928 25
-    ##   ..$ logo_path     : chr [1:3] "/837VMM4wOkODc1idNxGT0KQJlej.png" "/qAh0Ofz47KVy0A3118rjHUx3usk.png" "/qZCc1lty5FzX30aOCVRBLzaVmcp.png"
-    ##   ..$ name          : chr [1:3] "Marvel Entertainment" "20th Century Studios" "20th Century Fox"
-    ##   ..$ origin_country: chr [1:3] "US" "US" "US"
-    ##  $ production_countries :'data.frame':   1 obs. of  2 variables:
-    ##   ..$ iso_3166_1: chr "US"
-    ##   ..$ name      : chr "United States of America"
-    ##  $ release_date         : chr "2020-08-26"
-    ##  $ revenue              : int 3100000
-    ##  $ runtime              : int 94
-    ##  $ spoken_languages     :'data.frame':   3 obs. of  2 variables:
-    ##   ..$ iso_639_1: chr [1:3] "es" "fr" "en"
-    ##   ..$ name     : chr [1:3] "Español" "Français" "English"
+    ##  $ original_title       : chr "Bloodshot"
+    ##  $ overview             : chr "After he and his wife are murdered, marine Ray Garrison is resurrected by a team of scientists. Enhanced with n"| __truncated__
+    ##  $ popularity           : num 289
+    ##  $ poster_path          : chr "/8WUVHemHFH2ZIP6NWkwlHWsyrEL.jpg"
+    ##  $ production_companies :'data.frame':   9 obs. of  4 variables:
+    ##   ..$ id            : int [1:9] 34 10246 6573 333 103673 124335 5 1225 30148
+    ##   ..$ logo_path     : chr [1:9] "/GagSvqWlyPdkFHMfQ3pNq6ix9P.png" "/rREvQNWAxkDfY9CDn2c5YxEMPdP.png" NA "/5xUJfzPZ8jWJUDzYtIeuPO4qPIa.png" ...
+    ##   ..$ name          : chr [1:9] "Sony Pictures" "Cross Creek Pictures" "Mimran Schur Pictures" "Original Film" ...
+    ##   ..$ origin_country: chr [1:9] "US" "US" "US" "US" ...
+    ##  $ production_countries :'data.frame':   2 obs. of  2 variables:
+    ##   ..$ iso_3166_1: chr [1:2] "CN" "US"
+    ##   ..$ name      : chr [1:2] "China" "United States of America"
+    ##  $ release_date         : chr "2020-03-05"
+    ##  $ revenue              : int 30234182
+    ##  $ runtime              : int 110
+    ##  $ spoken_languages     :'data.frame':   1 obs. of  2 variables:
+    ##   ..$ iso_639_1: chr "en"
+    ##   ..$ name     : chr "English"
     ##  $ status               : chr "Released"
-    ##  $ tagline              : chr "It's time to face your demons"
-    ##  $ title                : chr "The New Mutants"
+    ##  $ tagline              : chr "Being a superhero is in his blood"
+    ##  $ title                : chr "Bloodshot"
     ##  $ video                : logi FALSE
-    ##  $ vote_average         : num 5.9
-    ##  $ vote_count           : int 127
+    ##  $ vote_average         : num 6.9
+    ##  $ vote_count           : int 3083
 
 Wow\! This list contains a combination of lists and data frames. I can
 see some fields that I’m interested in, such as `budget` and
@@ -227,18 +229,17 @@ see some fields that I’m interested in, such as `budget` and
 these list elements into a single data frame.
 
 ``` r
-super_movies <- map(hero_movie_id,
-                        ~super_detail_query(.x)) %>%
-  map_df(~as_tibble(t(.x))) %>%
-  select(budget, imdb_id, original_title, title,
-         release_date, revenue, runtime, status, vote_average,
-         vote_count, id) %>%
-  unnest(cols = everything()) %>%
-  rename(movie_id = id) %>% 
-  mutate(release_date = date(release_date))
-
-# Used when working on the analysis to speed up the knit process
-# saveRDS(super_movies, "Data/superMovies.RDS")
+super_movies <- xfun::cache_rds({
+  map(hero_movie_id,
+       ~super_detail_query(.x)) %>%
+    map_df(~as_tibble(t(.x))) %>%
+    select(budget, imdb_id, original_title, title,
+           release_date, revenue, runtime, status, vote_average,
+           vote_count, id) %>%
+    unnest(cols = everything()) %>%
+    rename(movie_id = id) %>% 
+    mutate(release_date = date(release_date))
+})
 ```
 
 ``` r
@@ -248,17 +249,17 @@ super_movies %>%
 
     ## Rows: 197
     ## Columns: 11
-    ## $ budget         <int> 200000000, 42000000, 300000000, 356000000, 67000000, 1…
-    ## $ imdb_id        <chr> "tt1825683", "tt1634106", "tt4154756", "tt4154796", "t…
-    ## $ original_title <chr> "Black Panther", "Bloodshot", "Avengers: Infinity War"…
-    ## $ title          <chr> "Black Panther", "Bloodshot", "Avengers: Infinity War"…
-    ## $ release_date   <date> 2018-02-13, 2020-03-05, 2018-04-25, 2019-04-24, 2020-…
-    ## $ revenue        <dbl> 1346739107, 30234182, 2046239637, 2797800564, 3100000,…
-    ## $ runtime        <int> 134, 110, 149, 181, 94, 129, 124, 122, 131, 114, 120, …
+    ## $ budget         <int> 42000000, 67000000, 300000000, 200000000, 356000000, 1…
+    ## $ imdb_id        <chr> "tt1634106", "tt4682266", "tt4154756", "tt1825683", "t…
+    ## $ original_title <chr> "Bloodshot", "The New Mutants", "Avengers: Infinity Wa…
+    ## $ title          <chr> "Bloodshot", "The New Mutants", "Avengers: Infinity Wa…
+    ## $ release_date   <date> 2020-03-05, 2020-08-26, 2018-04-25, 2018-02-13, 2019-…
+    ## $ revenue        <dbl> 30234182, 3100000, 2046239637, 1346739107, 2797800564,…
+    ## $ runtime        <int> 110, 94, 149, 134, 181, 129, 124, 122, 132, 112, 114, …
     ## $ status         <chr> "Released", "Released", "Released", "Released", "Relea…
-    ## $ vote_average   <dbl> 7.4, 7.0, 8.3, 8.3, 6.0, 7.5, 7.0, 7.1, 7.6, 6.1, 6.2,…
-    ## $ vote_count     <int> 15849, 3072, 19549, 14851, 113, 8232, 10000, 5597, 145…
-    ## $ movie_id       <int> 284054, 338762, 299536, 299534, 340102, 429617, 299537…
+    ## $ vote_average   <dbl> 6.9, 6.0, 8.3, 7.4, 8.3, 7.5, 7.0, 7.1, 7.0, 6.7, 6.1,…
+    ## $ vote_count     <int> 3083, 143, 19563, 15875, 14877, 8250, 10011, 5607, 549…
+    ## $ movie_id       <int> 338762, 340102, 299536, 284054, 299534, 429617, 299537…
 
 This looks much easier to interpret. All of the information that I want
 is in a nice data frame and ready for some exploratory data analysis.
@@ -283,7 +284,7 @@ super_movies %>%
   labs(x = "Release Year", title = "Superhero Movies Released by Year")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 There has definitely been an upward trend in the number of superhero
 movies released per year. More of these types of films start to pop up
@@ -329,7 +330,7 @@ super_summ %>%
   labs(x = "Release Year", col = "Metric", title = "Median Performance by Year")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 ``` r
 super_summ %>%
@@ -341,7 +342,7 @@ super_summ %>%
   labs(x = "Release Year", y = "ROI", title = "Median ROI by Year")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-11-2.png)<!-- --> There appear
+![](README_files/figure-gfm/unnamed-chunk-10-2.png)<!-- --> There appear
 to be some early superhero films that performed great at the box office
 and offered investors some amazing returns. However, the highest returns
 seem to be held by movies released after 2012. There also appear to be
@@ -365,7 +366,7 @@ super_movies_adj %>%
   labs(x = "Decade", y = "Profit")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 This plot is pretty interesting. <i>Avengers: Endgame</i> is by far the
 greatest superhero success at the box office, but 1989’s <i>Batman</i>
@@ -382,24 +383,25 @@ movies I’ve identified.
 
 ``` r
 cast_query <- function(movie_id) {
-  
   fromJSON(glue("https://api.themoviedb.org/3/movie/{movie_id}\\
                 /credits?api_key={Sys.getenv('THE_MOVIE_DB_KEY')}"))
 }
 
-super_cc <- map(hero_movie_id, ~cast_query(.x))
+super_cc <- xfun::cache_rds({
+  map(hero_movie_id, ~cast_query(.x))
+})
 
 super_cast <- super_cc %>% 
   map_df(~as_tibble(t(.x))) %>% 
   select(-crew) %>% 
   unnest(c(id, cast), names_repair = "unique") %>% 
-  rename(movie_id = 1, performer_id = 6, performer = 7) %>% 
+  rename(movie_id = 1, actor_id = 6, actor = 7) %>% 
   select(movie_id:order)
-
-# Used when working on the analysis to speed up the knit process
-# saveRDS(super_cast, "Data/super_cast.RDS")
-# rm(super_cc)
 ```
+
+    ## New names:
+    ## * id -> id...1
+    ## * id -> id...6
 
 Now that I have the cast data I can join it together with the rest of
 the movie data.
@@ -412,18 +414,18 @@ super_data <- super_cast %>%
 ```
 
 Before I move on to the last step, I’d like to answer a couple more
-questions. First up, what performer has been in the most superhero
-movies? This question should be pretty easy to answer for any MCU fan.
+questions. First up, what actor has been in the most superhero movies?
+This question should be pretty easy to answer for any MCU fan.
 
 ``` r
 super_data %>% 
-  count(performer) %>% 
+  count(actor) %>% 
   arrange(desc(n)) %>% 
   head()
 ```
 
     ## # A tibble: 6 x 2
-    ##   performer              n
+    ##   actor                  n
     ##   <chr>              <int>
     ## 1 Stan Lee              43
     ## 2 Chris Evans           13
@@ -434,19 +436,19 @@ super_data %>%
 
 ``` r
 super_data %>% 
-  filter(performer == "Stan Lee") %>% 
+  filter(actor == "Stan Lee") %>% 
   slice_max(order_by = release_date, n = 1) %>% 
-  select(title, release_date, performer, character)
+  select(title, release_date, actor, character)
 ```
 
     ## # A tibble: 1 x 4
-    ##   title             release_date performer character
-    ##   <chr>             <date>       <chr>     <chr>    
-    ## 1 Avengers: Endgame 2019-04-24   Stan Lee  Driver
+    ##   title             release_date actor    character
+    ##   <chr>             <date>       <chr>    <chr>    
+    ## 1 Avengers: Endgame 2019-04-24   Stan Lee Driver
 
 Stan Lee has made a cameo in nearly every Marvel film with his last
 being <i>Avengers: Endgame</i>. His cameos were always a great touch in
-the films. The other performers below Mr. Lee in appearances makes sense
+the films. The other actors below Mr. Lee in appearances makes sense
 except for one. Who is this Jimmy Star guy? If I dig a little deeper I
 might be able to find out.
 
@@ -486,3 +488,143 @@ jimmy_credits %>%
 Mr. Star appears to be a very active extra. He’s had 12 appearances to
 date in superhero films and 86 across all genres\! Above are the top
 five movies that he’s appeared in by vote average.
+
+## The Finale
+
+The last thing that I need is collect a list of popular people as
+defined by TMDb.
+
+``` r
+pop_pages <- fromJSON(glue("https://api.themoviedb.org/3/person/popular\\
+              ?api_key={Sys.getenv('THE_MOVIE_DB_KEY')}&language=en-US")) %>% 
+  pluck(3)
+
+# Function to query the data from the popular search
+pop_query <- function(page_num) {
+
+fromJSON(glue("https://api.themoviedb.org/3/person/popular\\
+              ?api_key={Sys.getenv('THE_MOVIE_DB_KEY')}&language=en-US&page={page_num}")) %>% 
+    pluck(4)
+}
+
+# Maps pop_query functions over the total number of a pages
+pop_actors <- xfun::cache_rds({
+  map_df(.x = c(1:pop_pages),
+         ~pop_query(.x))
+})
+
+pop_actors %>% 
+  select(popularity:name) %>% 
+  slice_sample(n = 10)
+```
+
+    ##    popularity known_for_department            name
+    ## 1       6.780               Acting  Elisabeth Moss
+    ## 2       2.283            Directing    Robert Vince
+    ## 3       3.652               Acting       Smith Cho
+    ## 4       2.177               Acting Helena Mattsson
+    ## 5       2.054               Acting    John Jarratt
+    ## 6       3.178               Acting    Eddie Albert
+    ## 7       2.356               Acting Chiara Mastalli
+    ## 8       6.235               Acting  Timothy Dalton
+    ## 9       4.398               Acting           Ice-T
+    ## 10      8.711               Acting   Steve Buscemi
+
+This list is great but it contains some popular people that I don’t
+want. I only want to focus current, popular, movie actors. I decided to
+filter for actors who have been in a American movie since 2005 and who
+are in the 75th percentile based upon the popularity metric.
+
+``` r
+top_pop_perf <- pop_actors %>%
+  # Unnest the known_for data frames for each actor
+  unnest(known_for, names_repair = "unique") %>% 
+  rename(actor = 3, actor_id = 4,
+         movie_id = 11) %>% 
+  # Removes missing release date rows
+  filter(release_date > 0) %>%  
+  mutate(release_date = date(release_date)) %>% 
+  group_by(actor) %>% 
+  # Filters for the oldest known_for item for each actor
+  slice_min(order_by = release_date, n = 1) %>% 
+  ungroup() %>%
+  filter(release_date > "2005-01-01", media_type == "movie", 
+         known_for_department == "Acting", 
+         original_language == "en") %>%
+  # Creates a quantile value for each actor based upon their popularity
+  mutate(q_rank = ntile(popularity, 4)) %>% 
+  filter(q_rank == 4) %>% 
+  select(actor, actor_id)
+
+top_pop_perf %>% 
+  nrow()
+```
+
+    ## [1] 734
+
+``` r
+top_pop_perf %>% 
+  slice_sample(n = 10)
+```
+
+    ## # A tibble: 10 x 2
+    ##    actor             actor_id
+    ##    <chr>                <int>
+    ##  1 Danny Huston          6413
+    ##  2 Ryan Reynolds        10859
+    ##  3 James Frain          22063
+    ##  4 Robert Pattinson     11288
+    ##  5 Dan Castellaneta       198
+    ##  6 Dustin Hoffman        4483
+    ##  7 Thomasin McKenzie  1356758
+    ##  8 Dolph Lundgren       16644
+    ##  9 Idris Elba           17605
+    ## 10 Sienna Miller        23459
+
+After filtering I’ve narrowed the pool down to the top 734 actors. A
+sample of this pool should show more recognizable names.
+
+I can use the setdiff function to identify the popular actors who have
+never been in a superhero film.
+
+``` r
+non_supers <- top_pop_perf %>% 
+  dplyr::setdiff(super_data %>% 
+                   distinct(actor, actor_id))
+
+(super_perc <- percent(1 - nrow(non_supers) / nrow(top_pop_perf)))
+```
+
+    ## [1] "31%"
+
+``` r
+non_supers %>% 
+  slice_sample(n = 15)
+```
+
+    ## # A tibble: 15 x 2
+    ##    actor             actor_id
+    ##    <chr>                <int>
+    ##  1 Agata Buzek          37982
+    ##  2 Yeardley Smith        5586
+    ##  3 Meredith Salenger    18706
+    ##  4 Ana de Armas        224513
+    ##  5 Scott Menville      113916
+    ##  6 Peter Gadiot       1035905
+    ##  7 Madison Riley       101565
+    ##  8 Rebecca Ferguson    933238
+    ##  9 Katie McGrath       150587
+    ## 10 Ashley Greene        45827
+    ## 11 Charlie Day          95101
+    ## 12 Peter Benson          5009
+    ## 13 Channing Tatum       38673
+    ## 14 Sofia Carson       1331457
+    ## 15 Mira Filzah        1783272
+
+After a little work I’ve have my very rough estimate of how many popular
+actors have been in a superhero film, 31%. That’s a big chunk but still
+smaller than I though it would be. Throughout this process I noticed
+some exceptions that seemed to crop up. Eva Mendes is categorized as a
+non-super but she starred in 2007’s <i>Ghost Rider</i>, which isn’t
+designated as a superhero film. Subjective factors like this have
+influenced every facet of this analysis.

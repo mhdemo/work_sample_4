@@ -6,14 +6,12 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-# Used when working on the analysis to speed up the knit process
-super_movies <- readRDS("Data/superMovies.RDS")
-super_cast <- readRDS("Data/super_cast.RDS")
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 ```
 
+
 ## Introduction
-It feels as though superhero movies have taken over the box office. It's hard to name a popular performer who hasn't appeared in at least one film where people can fly or move things with their minds. The goal of this project is to dig deeper into the growth of superhero movies and ultimately determine what percentage of popular performers have been in such films. This analysis is extremely subjective, but it does give me a great opportunity to utilize the `purrr` package to automate API calls.
+It feels as though superhero movies have taken over the box office. It's hard to name a popular actor who hasn't appeared in at least one film where people can fly or move things with their minds. The goal of this project is to dig deeper into the growth of superhero movies and ultimately determine what percentage of popular actors have been in such films. This analysis is extremely subjective, but it does give me a great opportunity to utilize the `purrr` package to automate API calls.
 
 All of the code used to conduct this analysis will be available in this repository. More in-depth explanations of the code used will be available in various posts on my website.[https://mhdemoblog.netlify.app/](https://mhdemoblog.netlify.app/)
 
@@ -32,6 +30,7 @@ library(lubridate)
 library(scales)
 library(patchwork)
 library(ggfittext)
+library(xfun)
 
 ```
 
@@ -55,7 +54,6 @@ super_hero_key_ids <- fromJSON(glue("https://api.themoviedb.org/3/search/keyword
                 &query={keyword_search}")) %>%
   pluck(2) %>% 
   pull(2)
-
 ```
 ### Superhero Movie Ids
 Using the keyword IDS I can search for any movies that contain those keywords. I just need to determine how many pages of results there are, create a function that queries the individual pages, and use the `map` function to iterate over those pages.
@@ -72,7 +70,6 @@ Using the keyword IDS I can search for any movies that contain those keywords. I
                        {glue_collapse(super_hero_key_ids, sep = '|')}\\
                        &primary_release_date.gte=1970-01-01")) %>%
   pluck(3))
-
 ```
 
 ```{r}
@@ -91,7 +88,6 @@ super_discover_query <- function(page_num) {
 
 super_discover_query(1) %>%
   glimpse()
-
 ```
 
 ```{r, include=FALSE}
@@ -100,7 +96,6 @@ super_discover_query(1) %>%
 sh_movies_p1 <- super_discover_query(1) %>% 
   slice(1:2) %>% 
   pull(title)
-
 ```
 
 The function appears to work as the first two movies visible from the `title` column are <i>`r sh_movies_p1[1]`</i> and <i>`r sh_movies_p1[2]`</i>. Next up is the iteration.
@@ -112,7 +107,6 @@ hero_movie_id <- map_df(1:page_count,
 
 hero_movie_id %>% 
   glimpse()
-
 ```
 
 The results from the pages were combined into a single data frame. I then used the `pull` function again to extract a vector containing the movie ids. It looks as though there have been `r length(hero_movie_id)` movies released in American theaters since Jan 1, 1970 that have been classified as superhero films.
@@ -129,31 +123,27 @@ super_detail_query <-  function(movie_id) {
 
 super_detail_query(hero_movie_id[1]) %>%
   glimpse()
-
 ```
 
 Wow! This list contains a combination of lists and data frames. I can see some fields that I'm interested in, such as `budget` and `vote_average`. I just need to map over the movie IDS and transform these list elements into a single data frame.
 
-```{r, eval=FALSE}
-super_movies <- map(hero_movie_id,
-                        ~super_detail_query(.x)) %>%
-  map_df(~as_tibble(t(.x))) %>%
-  select(budget, imdb_id, original_title, title,
-         release_date, revenue, runtime, status, vote_average,
-         vote_count, id) %>%
-  unnest(cols = everything()) %>%
-  rename(movie_id = id) %>% 
-  mutate(release_date = date(release_date))
-
-# Used when working on the analysis to speed up the knit process
-# saveRDS(super_movies, "Data/superMovies.RDS")
-
+```{r super-movies}
+super_movies <- xfun::cache_rds({
+  map(hero_movie_id,
+       ~super_detail_query(.x)) %>%
+    map_df(~as_tibble(t(.x))) %>%
+    select(budget, imdb_id, original_title, title,
+           release_date, revenue, runtime, status, vote_average,
+           vote_count, id) %>%
+    unnest(cols = everything()) %>%
+    rename(movie_id = id) %>% 
+    mutate(release_date = date(release_date))
+})
 ```
 
 ```{r}
 super_movies %>%
   glimpse()
-
 ```
 
 This looks much easier to interpret. All of the information that I want is in a nice data frame and ready for some exploratory data analysis.
@@ -172,7 +162,6 @@ super_movies %>%
   scale_x_continuous(breaks = breaks_width(5)) +
   theme(panel.grid.minor.y = element_blank()) +
   labs(x = "Release Year", title = "Superhero Movies Released by Year")
-
 ```
 
 There has definitely been an upward trend in the number of superhero movies released per year. More of these types of films start to pop up around the mid 2000s. But were these newer superhero films more successful than their older counterparts?
@@ -222,7 +211,6 @@ super_summ %>%
   scale_x_continuous(breaks = breaks_width(5)) +
   scale_y_continuous(labels = percent) +
   labs(x = "Release Year", y = "ROI", title = "Median ROI by Year")
-
 ```
 There appear to be some early superhero films that performed great at the box office and offered investors some amazing returns. However, the highest returns seem to be held by movies released after 2012. There also appear to be less occurrences of annual losses for this genre after 2012. This could be a product of studios' improved understanding of how to produce and market these types of movies.
 
@@ -239,7 +227,6 @@ super_movies_adj %>%
   geom_bar_text(reflow = TRUE) +
   scale_y_continuous(labels = dollar) +
   labs(x = "Decade", y = "Profit")
-
 ```
 
 This plot is pretty interesting. <i>Avengers: Endgame</i> is by far the greatest superhero success at the box office, but 1989's <i>Batman</i> offered investors a higher rate of return at a whopping 1,075 % ROI. The 2020s have only shown negative returns for superhero films at the time of this analysis.
@@ -247,26 +234,22 @@ This plot is pretty interesting. <i>Avengers: Endgame</i> is by far the greatest
 ## The Queries Pt 2
 The movie data that I’ve collected so far is great, but it lacks any information on the cast for each film. I’ll have to use a slightly different set of API calls to collect all of the cast listing for the movies I’ve identified. 
 
-```{r, eval=FALSE}
+```{r super-cc}
 cast_query <- function(movie_id) {
-  
   fromJSON(glue("https://api.themoviedb.org/3/movie/{movie_id}\\
                 /credits?api_key={Sys.getenv('THE_MOVIE_DB_KEY')}"))
 }
 
-super_cc <- map(hero_movie_id, ~cast_query(.x))
+super_cc <- xfun::cache_rds({
+  map(hero_movie_id, ~cast_query(.x))
+})
 
 super_cast <- super_cc %>% 
   map_df(~as_tibble(t(.x))) %>% 
   select(-crew) %>% 
   unnest(c(id, cast), names_repair = "unique") %>% 
-  rename(movie_id = 1, performer_id = 6, performer = 7) %>% 
+  rename(movie_id = 1, actor_id = 6, actor = 7) %>% 
   select(movie_id:order)
-
-# Used when working on the analysis to speed up the knit process
-# saveRDS(super_cast, "Data/super_cast.RDS")
-# rm(super_cc)
-
 ```
 
 Now that I have the cast data I can join it together with the rest of the movie data.
@@ -276,26 +259,25 @@ super_data <- super_cast %>%
   left_join(super_movies_adj,
             by = "movie_id") %>% 
   relocate(movie_id, title, budget_inf_adj, revenue_inf_adj, profit, character)
-
 ```
 
 
-Before I move on to the last step, I'd like to answer a couple more questions. First up, what performer has been in the most superhero movies? This question should be pretty easy to answer for any MCU fan.
+Before I move on to the last step, I'd like to answer a couple more questions. First up, what actor has been in the most superhero movies? This question should be pretty easy to answer for any MCU fan.
 
 ```{r}
 super_data %>% 
-  count(performer) %>% 
+  count(actor) %>% 
   arrange(desc(n)) %>% 
   head()
 
 super_data %>% 
-  filter(performer == "Stan Lee") %>% 
+  filter(actor == "Stan Lee") %>% 
   slice_max(order_by = release_date, n = 1) %>% 
-  select(title, release_date, performer, character)
+  select(title, release_date, actor, character)
 ```
 
 
-Stan Lee has made a cameo in nearly every Marvel film with his last being <i>Avengers: Endgame</i>. His cameos were always a great touch in the films. The other performers below Mr. Lee in appearances makes sense except for one. Who is this Jimmy Star guy? If I dig a little deeper I might be able to find out.
+Stan Lee has made a cameo in nearly every Marvel film with his last being <i>Avengers: Endgame</i>. His cameos were always a great touch in the films. The other actors below Mr. Lee in appearances makes sense except for one. Who is this Jimmy Star guy? If I dig a little deeper I might be able to find out.
 
 ```{r}
 jimmy_credits <- pluck(fromJSON(glue("https://api.themoviedb.org/3\\
@@ -309,7 +291,81 @@ jimmy_credits %>%
   arrange(desc(vote_average)) %>% 
   select(title, release_date, character, vote_average) %>% 
   head()
-
 ```
 
 Mr. Star appears to be a very active extra. He's had 12 appearances to date in superhero films and 86 across all genres! Above are the top five movies that he's appeared in by vote average.
+
+## The Finale
+
+The last thing that I need is collect a list of popular people as defined by TMDb.
+
+```{r pop-actors}
+pop_pages <- fromJSON(glue("https://api.themoviedb.org/3/person/popular\\
+              ?api_key={Sys.getenv('THE_MOVIE_DB_KEY')}&language=en-US")) %>% 
+  pluck(3)
+
+# Function to query the data from the popular search
+pop_query <- function(page_num) {
+
+fromJSON(glue("https://api.themoviedb.org/3/person/popular\\
+              ?api_key={Sys.getenv('THE_MOVIE_DB_KEY')}&language=en-US&page={page_num}")) %>% 
+    pluck(4)
+}
+
+# Maps pop_query functions over the total number of a pages
+pop_actors <- xfun::cache_rds({
+  map_df(.x = c(1:pop_pages),
+         ~pop_query(.x))
+})
+
+pop_actors %>% 
+  select(popularity:name) %>% 
+  slice_sample(n = 10)
+```
+
+This list is great but it contains some popular people that I don't want. I only want to focus current, popular, movie actors. I decided to filter for actors who have been in a American movie since 2005 and who are in the 75th percentile based upon the popularity metric.
+
+```{r, message=FALSE}
+top_pop_perf <- pop_actors %>%
+  # Unnest the known_for data frames for each actor
+  unnest(known_for, names_repair = "unique") %>% 
+  rename(actor = 3, actor_id = 4,
+         movie_id = 11) %>% 
+  # Removes missing release date rows
+  filter(release_date > 0) %>%  
+  mutate(release_date = date(release_date)) %>% 
+  group_by(actor) %>% 
+  # Filters for the oldest known_for item for each actor
+  slice_min(order_by = release_date, n = 1) %>% 
+  ungroup() %>%
+  filter(release_date > "2005-01-01", media_type == "movie", 
+         known_for_department == "Acting", 
+         original_language == "en") %>%
+  # Creates a quantile value for each actor based upon their popularity
+  mutate(q_rank = ntile(popularity, 4)) %>% 
+  filter(q_rank == 4) %>% 
+  select(actor, actor_id)
+
+top_pop_perf %>% 
+  nrow()
+
+top_pop_perf %>% 
+  slice_sample(n = 10)
+```
+After filtering I've narrowed the pool down to the top 734 actors. A sample of this pool should show more recognizable names.
+
+I can use the setdiff function to identify the popular actors who have never been in a superhero film.
+
+```{r}
+non_supers <- top_pop_perf %>% 
+  dplyr::setdiff(super_data %>% 
+                   distinct(actor, actor_id))
+
+(super_perc <- percent(1 - nrow(non_supers) / nrow(top_pop_perf)))
+
+non_supers %>% 
+  slice_sample(n = 15)
+```
+
+
+After a little work I've have my very rough estimate of how many popular actors have been in a superhero film, `r super_perc`. That's a big chunk but still smaller than I though it would be. Throughout this process I noticed some exceptions that seemed to crop up. Eva Mendes is categorized as a non-super but she starred in 2007's <i>Ghost Rider</i>, which isn't designated as a superhero film. Subjective factors like this have influenced every facet of this analysis.
