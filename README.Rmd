@@ -24,16 +24,9 @@ All of the data used in this analysis, will be queried from The Movie Database. 
 
 ## Packages
 ```{r, message=FALSE}
-library(tidyverse)
-library(glue)
-library(jsonlite)
-library(janitor)
-library(lubridate)
-library(scales)
-library(patchwork)
-library(ggfittext)
-library(xfun)
-
+xfun::pkg_attach("tidyverse", "glue", "jsonlite", "janitor",
+                 "lubridate", "scales", "patchwork", "ggfittext",
+                 "httr")
 ```
 
 
@@ -45,47 +38,58 @@ First I need to find all of the keywords that contain the word "superhero" and s
 ```{r}
 keyword_search <- "superhero"
 
-fromJSON(glue("https://api.themoviedb.org/3/search/keyword?\\
-                api_key={Sys.getenv('THE_MOVIE_DB_KEY')}\\
-                &query={keyword_search}")) %>%
-  pluck(2) %>% 
+GET(url = "https://api.themoviedb.org/3/search/keyword",
+    query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"),
+                 query = keyword_search)) %>% 
+  content(as = "text") %>% 
+  fromJSON() %>% 
+  pluck("results") %>% 
   head()
 
-super_hero_key_ids <- fromJSON(glue("https://api.themoviedb.org/3/search/keyword?\\
-                api_key={Sys.getenv('THE_MOVIE_DB_KEY')}\\
-                &query={keyword_search}")) %>%
-  pluck(2) %>% 
-  pull(2)
+
+super_hero_key_ids <- GET(url = "https://api.themoviedb.org/3/search/keyword",
+    query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"),
+                 query = keyword_search)) %>% 
+  content(as = "text") %>% 
+  fromJSON() %>% 
+  pluck("results") %>% 
+  pull(id)
 ```
 ### Superhero Movie Ids
 Using the keyword IDS I can search for any movies that contain those keywords. I just need to determine how many pages of results there are, create a function that queries the individual pages, and use the `map` function to iterate over those pages.
 ```{r}
 # without_genres=16 - removes movies classified as animation
 # with_release_type=3 - filters for theatrical releases
-(page_count <- fromJSON(glue("https://api.themoviedb.org/3/discover/movie?\\
-                       api_key={Sys.getenv('THE_MOVIE_DB_KEY')}\\
-                       &certification_country=US&language=en-US&\\
-                       without_genres=16&\\
-                       with_release_type=3\\
-                       &region=US\\
-                       &with_keywords=\\
-                       {glue_collapse(super_hero_key_ids, sep = '|')}\\
-                       &primary_release_date.gte=1970-01-01")) %>%
-  pluck(3))
+(page_count <- GET(url = "https://api.themoviedb.org/3/discover/movie",
+    query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"),
+                 certification_country = "US",
+                 language = "en-US",
+                 without_genres = 16,
+                 with_release_type = 3,
+                 region = "US",
+                 with_keywords = glue_collapse(super_hero_key_ids, sep = '|'),
+                 primary_release_date.gte = "1970-01-01")) %>% 
+  content(as = "text") %>% 
+  fromJSON() %>% 
+  pluck("total_pages"))
+
 ```
 
 ```{r}
 super_discover_query <- function(page_num) {
-  fromJSON(glue("https://api.themoviedb.org/3/discover/movie?\\
-                       api_key={Sys.getenv('THE_MOVIE_DB_KEY')}\\
-                       &certification_country=US&language=en-US&\\
-                       without_genres=16&\\
-                       with_release_type=3\\
-                       &region=US\\
-                       &with_keywords=\\
-                       {glue_collapse(super_hero_key_ids, sep = '|')}\\
-                       &primary_release_date.gte=1970-01-01&page={page_num}")) %>%
-    pluck(4)
+  GET(url = "https://api.themoviedb.org/3/discover/movie",
+      query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"),
+                   certification_country = "US",
+                   language = "en-US",
+                   without_genres = 16,
+                   with_release_type = 3,
+                   region = "US",
+                   with_keywords = glue_collapse(super_hero_key_ids, sep = '|'),
+                   primary_release_date.gte = "1970-01-01",
+                   page = page_num)) %>% 
+    content(as = "text") %>% 
+    fromJSON() %>% 
+    pluck("results")
 }
 
 super_discover_query(1) %>%
@@ -119,8 +123,11 @@ I could use the rest of the data found in the discover API call, but I want to k
 ```{r}
 super_detail_query <-  function(movie_id) {
 
-  fromJSON(glue("https://api.themoviedb.org/3/movie/{movie_id}?\\
-                api_key={Sys.getenv('THE_MOVIE_DB_KEY')}&language=en-US"))
+  GET(url = glue("https://api.themoviedb.org/3/movie/{movie_id}"),
+      query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"),
+                   language = "en-US")) %>% 
+    content(as = "text") %>% 
+    fromJSON()
 }
 
 super_detail_query(hero_movie_id[1]) %>%
@@ -238,8 +245,10 @@ The movie data that I’ve collected so far is great, but it lacks any informati
 
 ```{r super-cc}
 cast_query <- function(movie_id) {
-  fromJSON(glue("https://api.themoviedb.org/3/movie/{movie_id}\\
-                /credits?api_key={Sys.getenv('THE_MOVIE_DB_KEY')}"))
+  GET(url = glue("https://api.themoviedb.org/3/movie/{movie_id}/credits"),
+      query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"))) %>% 
+    content(as = "text") %>% 
+    fromJSON()
 }
 
 super_cc <- xfun::cache_rds({
@@ -282,10 +291,12 @@ super_data %>%
 Stan Lee has made a cameo in nearly every Marvel film with his last being <i>Avengers: Endgame</i>. His cameos were always a great touch in the films. The other actors below Mr. Lee in appearances makes sense except for one. Who is this Jimmy Star guy? If I dig a little deeper I might be able to find out.
 
 ```{r}
-jimmy_credits <- pluck(fromJSON(glue("https://api.themoviedb.org/3\\
-                               /person/1781358/movie_credits?\\
-                               api_key={Sys.getenv('THE_MOVIE_DB_KEY')}&\\
-                               language=en-US")), 1)
+jimmy_credits <- GET(url = glue("https://api.themoviedb.org/3/person/1781358/movie_credits"),
+    query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"),
+                 language = "en-US")) %>% 
+  content(as = "text") %>% 
+  fromJSON() %>% 
+  pluck("cast")
 
 nrow(jimmy_credits)
 
@@ -302,16 +313,22 @@ Mr. Star appears to be a very active extra. He's had 12 appearances to date in s
 The last thing that I need is collect a list of popular people as defined by TMDb.
 
 ```{r pop-actors}
-pop_pages <- fromJSON(glue("https://api.themoviedb.org/3/person/popular\\
-              ?api_key={Sys.getenv('THE_MOVIE_DB_KEY')}&language=en-US")) %>% 
-  pluck(3)
+pop_pages <- GET(url = "https://api.themoviedb.org/3/person/popular",
+    query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"),
+                 language = "en-US")) %>% 
+  content(as = "text") %>% 
+  fromJSON() %>% 
+  pluck("total_pages")
 
 # Function to query the data from the popular search
 pop_query <- function(page_num) {
-
-fromJSON(glue("https://api.themoviedb.org/3/person/popular\\
-              ?api_key={Sys.getenv('THE_MOVIE_DB_KEY')}&language=en-US&page={page_num}")) %>% 
-    pluck(4)
+  GET(url = "https://api.themoviedb.org/3/person/popular",
+      query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"),
+                   language = "en-US",
+                   page = page_num)) %>% 
+    content(as = "text") %>% 
+    fromJSON() %>% 
+    pluck("results")
 }
 
 # Maps pop_query functions over the total number of a pages
@@ -321,7 +338,7 @@ pop_actors <- xfun::cache_rds({
 })
 
 pop_actors %>% 
-  select(popularity:name) %>% 
+  select(popularity, name) %>% 
   slice_sample(n = 10)
 ```
 
@@ -331,8 +348,8 @@ This list is great but it contains some popular people that I don't want. I only
 top_pop_perf <- pop_actors %>%
   # Unnest the known_for data frames for each actor
   unnest(known_for, names_repair = "unique") %>% 
-  rename(actor = 3, actor_id = 4,
-         movie_id = 11) %>% 
+  rename(actor = 25, actor_id = 4,
+         movie_id = 8) %>% 
   # Removes missing release date rows
   filter(release_date > 0) %>%  
   mutate(release_date = date(release_date)) %>% 

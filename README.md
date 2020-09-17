@@ -46,15 +46,9 @@ page.
 ## Packages
 
 ``` r
-library(tidyverse)
-library(glue)
-library(jsonlite)
-library(janitor)
-library(lubridate)
-library(scales)
-library(patchwork)
-library(ggfittext)
-library(xfun)
+xfun::pkg_attach("tidyverse", "glue", "jsonlite", "janitor",
+                 "lubridate", "scales", "patchwork", "ggfittext",
+                 "httr")
 ```
 
 ## The Queries Pt 1
@@ -70,27 +64,31 @@ First I need to find all of the keywords that contain the word
 ``` r
 keyword_search <- "superhero"
 
-fromJSON(glue("https://api.themoviedb.org/3/search/keyword?\\
-                api_key={Sys.getenv('THE_MOVIE_DB_KEY')}\\
-                &query={keyword_search}")) %>%
-  pluck(2) %>% 
+GET(url = "https://api.themoviedb.org/3/search/keyword",
+    query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"),
+                 query = keyword_search)) %>% 
+  content(as = "text") %>% 
+  fromJSON() %>% 
+  pluck("results") %>% 
   head()
 ```
 
     ##                 name     id
     ## 1          superhero   9715
-    ## 2       superheroine  10843
-    ## 3     superhero team 155030
-    ## 4    superhero spoof 157677
-    ## 5 death of superhero 174016
-    ## 6   masked superhero 180734
+    ## 2     superhero team 155030
+    ## 3    superhero spoof 157677
+    ## 4 death of superhero 174016
+    ## 5   masked superhero 180734
+    ## 6     superhero kids 191219
 
 ``` r
-super_hero_key_ids <- fromJSON(glue("https://api.themoviedb.org/3/search/keyword?\\
-                api_key={Sys.getenv('THE_MOVIE_DB_KEY')}\\
-                &query={keyword_search}")) %>%
-  pluck(2) %>% 
-  pull(2)
+super_hero_key_ids <- GET(url = "https://api.themoviedb.org/3/search/keyword",
+    query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"),
+                 query = keyword_search)) %>% 
+  content(as = "text") %>% 
+  fromJSON() %>% 
+  pluck("results") %>% 
+  pull(id)
 ```
 
 ### Superhero Movie Ids
@@ -103,32 +101,37 @@ function to iterate over those pages.
 ``` r
 # without_genres=16 - removes movies classified as animation
 # with_release_type=3 - filters for theatrical releases
-(page_count <- fromJSON(glue("https://api.themoviedb.org/3/discover/movie?\\
-                       api_key={Sys.getenv('THE_MOVIE_DB_KEY')}\\
-                       &certification_country=US&language=en-US&\\
-                       without_genres=16&\\
-                       with_release_type=3\\
-                       &region=US\\
-                       &with_keywords=\\
-                       {glue_collapse(super_hero_key_ids, sep = '|')}\\
-                       &primary_release_date.gte=1970-01-01")) %>%
-  pluck(3))
+(page_count <- GET(url = "https://api.themoviedb.org/3/discover/movie",
+    query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"),
+                 certification_country = "US",
+                 language = "en-US",
+                 without_genres = 16,
+                 with_release_type = 3,
+                 region = "US",
+                 with_keywords = glue_collapse(super_hero_key_ids, sep = '|'),
+                 primary_release_date.gte = "1970-01-01")) %>% 
+  content(as = "text") %>% 
+  fromJSON() %>% 
+  pluck("total_pages"))
 ```
 
     ## [1] 10
 
 ``` r
 super_discover_query <- function(page_num) {
-  fromJSON(glue("https://api.themoviedb.org/3/discover/movie?\\
-                       api_key={Sys.getenv('THE_MOVIE_DB_KEY')}\\
-                       &certification_country=US&language=en-US&\\
-                       without_genres=16&\\
-                       with_release_type=3\\
-                       &region=US\\
-                       &with_keywords=\\
-                       {glue_collapse(super_hero_key_ids, sep = '|')}\\
-                       &primary_release_date.gte=1970-01-01&page={page_num}")) %>%
-    pluck(4)
+  GET(url = "https://api.themoviedb.org/3/discover/movie",
+      query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"),
+                   certification_country = "US",
+                   language = "en-US",
+                   without_genres = 16,
+                   with_release_type = 3,
+                   region = "US",
+                   with_keywords = glue_collapse(super_hero_key_ids, sep = '|'),
+                   primary_release_date.gte = "1970-01-01",
+                   page = page_num)) %>% 
+    content(as = "text") %>% 
+    fromJSON() %>% 
+    pluck("results")
 }
 
 super_discover_query(1) %>%
@@ -137,24 +140,24 @@ super_discover_query(1) %>%
 
     ## Rows: 20
     ## Columns: 14
-    ## $ popularity        <dbl> 289.008, 269.791, 227.186, 222.109, 209.604, 171.81…
-    ## $ vote_count        <int> 3080, 135, 19557, 15870, 14867, 8243, 10008, 5601, …
+    ## $ popularity        <dbl> 250.661, 240.432, 213.691, 206.743, 179.668, 148.38…
+    ## $ vote_count        <int> 3128, 19662, 15031, 254, 8335, 15969, 5651, 5544, 9…
     ## $ video             <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FA…
-    ## $ poster_path       <chr> "/8WUVHemHFH2ZIP6NWkwlHWsyrEL.jpg", "/45FNxAIooJFqj…
-    ## $ id                <int> 338762, 340102, 299536, 284054, 299534, 429617, 299…
+    ## $ poster_path       <chr> "/8WUVHemHFH2ZIP6NWkwlHWsyrEL.jpg", "/7WsyChQLEftFi…
+    ## $ id                <int> 338762, 299536, 299534, 340102, 429617, 284054, 399…
     ## $ adult             <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FA…
-    ## $ backdrop_path     <chr> "/lP5eKh8WOcPysfELrUpGhHJGZEH.jpg", "/eCIvqa3QVCx6H…
+    ## $ backdrop_path     <chr> "/lP5eKh8WOcPysfELrUpGhHJGZEH.jpg", "/bOGkgRGdhrBYJ…
     ## $ original_language <chr> "en", "en", "en", "en", "en", "en", "en", "en", "en…
-    ## $ original_title    <chr> "Bloodshot", "The New Mutants", "Avengers: Infinity…
-    ## $ genre_ids         <list> [<28, 878>, <28, 12, 27, 878>, <28, 12, 878>, <28,…
-    ## $ title             <chr> "Bloodshot", "The New Mutants", "Avengers: Infinity…
-    ## $ vote_average      <dbl> 7.0, 6.0, 8.3, 7.4, 8.3, 7.5, 7.0, 7.1, 7.0, 6.7, 6…
+    ## $ original_title    <chr> "Bloodshot", "Avengers: Infinity War", "Avengers: E…
+    ## $ genre_ids         <list> [<28, 18, 878>, <28, 12, 878>, <28, 12, 878>, <28,…
+    ## $ title             <chr> "Bloodshot", "Avengers: Infinity War", "Avengers: E…
+    ## $ vote_average      <dbl> 6.9, 8.3, 8.3, 5.8, 7.5, 7.4, 7.1, 7.0, 6.2, 6.7, 7…
     ## $ overview          <chr> "After he and his wife are murdered, marine Ray Gar…
-    ## $ release_date      <chr> "2020-03-13", "2020-08-28", "2018-04-27", "2018-02-…
+    ## $ release_date      <chr> "2020-03-13", "2018-04-27", "2019-04-26", "2020-08-…
 
 The function appears to work as the first two movies visible from the
-`title` column are <i>Bloodshot</i> and <i>The New Mutants</i>. Next up
-is the iteration.
+`title` column are <i>Bloodshot</i> and <i>Avengers: Infinity War</i>.
+Next up is the iteration.
 
 ``` r
 hero_movie_id <- map_df(1:page_count,
@@ -165,11 +168,11 @@ hero_movie_id %>%
   glimpse()
 ```
 
-    ##  int [1:197] 338762 340102 299536 284054 299534 429617 299537 399579 287947 335983 ...
+    ##  int [1:193] 338762 299536 299534 340102 429617 284054 399579 287947 141052 335983 ...
 
 The results from the pages were combined into a single data frame. I
 then used the `pull` function again to extract a vector containing the
-movie ids. It looks as though there have been 197 movies released in
+movie ids. It looks as though there have been 193 movies released in
 American theaters since Jan 1, 1970 that have been classified as
 superhero films.
 
@@ -185,8 +188,11 @@ the movie IDS.
 ``` r
 super_detail_query <-  function(movie_id) {
 
-  fromJSON(glue("https://api.themoviedb.org/3/movie/{movie_id}?\\
-                api_key={Sys.getenv('THE_MOVIE_DB_KEY')}&language=en-US"))
+  GET(url = glue("https://api.themoviedb.org/3/movie/{movie_id}"),
+      query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"),
+                   language = "en-US")) %>% 
+    content(as = "text") %>% 
+    fromJSON()
 }
 
 super_detail_query(hero_movie_id[1]) %>%
@@ -198,16 +204,16 @@ super_detail_query(hero_movie_id[1]) %>%
     ##  $ backdrop_path        : chr "/lP5eKh8WOcPysfELrUpGhHJGZEH.jpg"
     ##  $ belongs_to_collection: NULL
     ##  $ budget               : int 42000000
-    ##  $ genres               :'data.frame':   2 obs. of  2 variables:
-    ##   ..$ id  : int [1:2] 28 878
-    ##   ..$ name: chr [1:2] "Action" "Science Fiction"
+    ##  $ genres               :'data.frame':   3 obs. of  2 variables:
+    ##   ..$ id  : int [1:3] 28 878 18
+    ##   ..$ name: chr [1:3] "Action" "Science Fiction" "Drama"
     ##  $ homepage             : chr "https://www.bloodshot.movie/"
     ##  $ id                   : int 338762
     ##  $ imdb_id              : chr "tt1634106"
     ##  $ original_language    : chr "en"
     ##  $ original_title       : chr "Bloodshot"
     ##  $ overview             : chr "After he and his wife are murdered, marine Ray Garrison is resurrected by a team of scientists. Enhanced with n"| __truncated__
-    ##  $ popularity           : num 289
+    ##  $ popularity           : num 251
     ##  $ poster_path          : chr "/8WUVHemHFH2ZIP6NWkwlHWsyrEL.jpg"
     ##  $ production_companies :'data.frame':   9 obs. of  4 variables:
     ##   ..$ id            : int [1:9] 34 10246 6573 333 103673 124335 5 1225 30148
@@ -228,7 +234,7 @@ super_detail_query(hero_movie_id[1]) %>%
     ##  $ title                : chr "Bloodshot"
     ##  $ video                : logi FALSE
     ##  $ vote_average         : num 6.9
-    ##  $ vote_count           : int 3083
+    ##  $ vote_count           : int 3133
 
 Wow\! This list contains a combination of lists and data frames. I can
 see some fields that I’m interested in, such as `budget` and
@@ -254,19 +260,19 @@ super_movies %>%
   glimpse()
 ```
 
-    ## Rows: 197
+    ## Rows: 193
     ## Columns: 11
-    ## $ budget         <int> 42000000, 67000000, 300000000, 200000000, 356000000, 1…
-    ## $ imdb_id        <chr> "tt1634106", "tt4682266", "tt4154756", "tt1825683", "t…
-    ## $ original_title <chr> "Bloodshot", "The New Mutants", "Avengers: Infinity Wa…
-    ## $ title          <chr> "Bloodshot", "The New Mutants", "Avengers: Infinity Wa…
-    ## $ release_date   <date> 2020-03-05, 2020-08-26, 2018-04-25, 2018-02-13, 2019-…
-    ## $ revenue        <dbl> 30234182, 3100000, 2046239637, 1346739107, 2797800564,…
-    ## $ runtime        <int> 110, 94, 149, 134, 181, 129, 124, 122, 132, 112, 114, …
+    ## $ budget         <int> 42000000, 300000000, 356000000, 67000000, 160000000, 2…
+    ## $ imdb_id        <chr> "tt1634106", "tt4154756", "tt4154796", "tt4682266", "t…
+    ## $ original_title <chr> "Bloodshot", "Avengers: Infinity War", "Avengers: Endg…
+    ## $ title          <chr> "Bloodshot", "Avengers: Infinity War", "Avengers: Endg…
+    ## $ release_date   <date> 2020-03-05, 2018-04-25, 2019-04-24, 2020-08-26, 2019-…
+    ## $ revenue        <dbl> 30234182, 2046239637, 2797800564, 3100000, 1131927996,…
+    ## $ runtime        <int> 110, 149, 181, 94, 129, 134, 122, 132, 120, 112, 124, …
     ## $ status         <chr> "Released", "Released", "Released", "Released", "Relea…
-    ## $ vote_average   <dbl> 6.9, 6.0, 8.3, 7.4, 8.3, 7.5, 7.0, 7.1, 7.0, 6.7, 6.1,…
-    ## $ vote_count     <int> 3083, 143, 19563, 15875, 14877, 8250, 10011, 5607, 549…
-    ## $ movie_id       <int> 338762, 340102, 299536, 284054, 299534, 429617, 299537…
+    ## $ vote_average   <dbl> 6.9, 8.3, 8.3, 5.8, 7.5, 7.4, 7.1, 7.0, 6.2, 6.7, 7.0,…
+    ## $ vote_count     <int> 3133, 19665, 15035, 254, 8335, 15971, 5655, 5544, 9600…
+    ## $ movie_id       <int> 338762, 299536, 299534, 340102, 429617, 284054, 399579…
 
 This looks much easier to interpret. All of the information that I want
 is in a nice data frame and ready for some exploratory data analysis.
@@ -390,8 +396,10 @@ movies I’ve identified.
 
 ``` r
 cast_query <- function(movie_id) {
-  fromJSON(glue("https://api.themoviedb.org/3/movie/{movie_id}\\
-                /credits?api_key={Sys.getenv('THE_MOVIE_DB_KEY')}"))
+  GET(url = glue("https://api.themoviedb.org/3/movie/{movie_id}/credits"),
+      query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"))) %>% 
+    content(as = "text") %>% 
+    fromJSON()
 }
 
 super_cc <- xfun::cache_rds({
@@ -438,7 +446,7 @@ super_data %>%
     ## 2 Chris Evans           13
     ## 3 Samuel L. Jackson     13
     ## 4 Jimmy Star            12
-    ## 5 Robert Downey Jr.     11
+    ## 5 Robert Downey Jr.     10
     ## 6 Scarlett Johansson    10
 
 ``` r
@@ -460,10 +468,12 @@ except for one. Who is this Jimmy Star guy? If I dig a little deeper I
 might be able to find out.
 
 ``` r
-jimmy_credits <- pluck(fromJSON(glue("https://api.themoviedb.org/3\\
-                               /person/1781358/movie_credits?\\
-                               api_key={Sys.getenv('THE_MOVIE_DB_KEY')}&\\
-                               language=en-US")), 1)
+jimmy_credits <- GET(url = glue("https://api.themoviedb.org/3/person/1781358/movie_credits"),
+    query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"),
+                 language = "en-US")) %>% 
+  content(as = "text") %>% 
+  fromJSON() %>% 
+  pluck("cast")
 
 nrow(jimmy_credits)
 ```
@@ -502,16 +512,22 @@ The last thing that I need is collect a list of popular people as
 defined by TMDb.
 
 ``` r
-pop_pages <- fromJSON(glue("https://api.themoviedb.org/3/person/popular\\
-              ?api_key={Sys.getenv('THE_MOVIE_DB_KEY')}&language=en-US")) %>% 
-  pluck(3)
+pop_pages <- GET(url = "https://api.themoviedb.org/3/person/popular",
+    query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"),
+                 language = "en-US")) %>% 
+  content(as = "text") %>% 
+  fromJSON() %>% 
+  pluck("total_pages")
 
 # Function to query the data from the popular search
 pop_query <- function(page_num) {
-
-fromJSON(glue("https://api.themoviedb.org/3/person/popular\\
-              ?api_key={Sys.getenv('THE_MOVIE_DB_KEY')}&language=en-US&page={page_num}")) %>% 
-    pluck(4)
+  GET(url = "https://api.themoviedb.org/3/person/popular",
+      query = list(api_key = Sys.getenv("THE_MOVIE_DB_KEY"),
+                   language = "en-US",
+                   page = page_num)) %>% 
+    content(as = "text") %>% 
+    fromJSON() %>% 
+    pluck("results")
 }
 
 # Maps pop_query functions over the total number of a pages
@@ -521,21 +537,21 @@ pop_actors <- xfun::cache_rds({
 })
 
 pop_actors %>% 
-  select(popularity:name) %>% 
+  select(popularity, name) %>% 
   slice_sample(n = 10)
 ```
 
-    ##    popularity known_for_department                  name
-    ## 1       2.477               Acting           Carla Salle
-    ## 2       3.681               Acting    Kimberlee Peterson
-    ## 3       3.272               Acting        Carmen Electra
-    ## 4       2.500               Acting            Tim Guinee
-    ## 5       2.891               Acting        Gözde Kocaoğlu
-    ## 6       2.943               Acting           Clu Gulager
-    ## 7       2.325               Acting       Bumper Robinson
-    ## 8       2.101               Acting William Chan Wai-Ting
-    ## 9       2.324               Acting          Benjie Paras
-    ## 10      2.240               Acting          Richard Egan
+    ##    popularity            name
+    ## 1       3.080       Chung Fat
+    ## 2       5.696       Hal Ozsan
+    ## 3       3.297   Robert Loggia
+    ## 4       3.641    Karl Johnson
+    ## 5       3.198    Shera Danese
+    ## 6       3.832    Tyrone Power
+    ## 7       3.759 DeForest Kelley
+    ## 8       4.690   Rafael Edholm
+    ## 9       9.619     Gary Oldman
+    ## 10      3.581    Gerard Horan
 
 This list is great but it contains some popular people that I don’t
 want. I only want to focus current, popular, movie actors. I decided to
@@ -546,8 +562,8 @@ are in the 75th percentile based upon the popularity metric.
 top_pop_perf <- pop_actors %>%
   # Unnest the known_for data frames for each actor
   unnest(known_for, names_repair = "unique") %>% 
-  rename(actor = 3, actor_id = 4,
-         movie_id = 11) %>% 
+  rename(actor = 25, actor_id = 4,
+         movie_id = 8) %>% 
   # Removes missing release date rows
   filter(release_date > 0) %>%  
   mutate(release_date = date(release_date)) %>% 
@@ -567,7 +583,7 @@ top_pop_perf %>%
   nrow()
 ```
 
-    ## [1] 734
+    ## [1] 792
 
 ``` r
 top_pop_perf %>% 
@@ -575,18 +591,18 @@ top_pop_perf %>%
 ```
 
     ## # A tibble: 10 x 2
-    ##    actor            actor_id
-    ##    <chr>               <int>
-    ##  1 Robert Redford       4135
-    ##  2 Elizabeth Olsen    550843
-    ##  3 Trish Stratus      238367
-    ##  4 Rosa Salazar       973667
-    ##  5 Monique Coleman    180279
-    ##  6 Josh Stamberg       21882
-    ##  7 Brenton Thwaites  1017347
-    ##  8 Blake Lively        59175
-    ##  9 Bill Nighy           2440
-    ## 10 Richard Harmon     144852
+    ##    actor              actor_id
+    ##    <chr>                 <int>
+    ##  1 Michael Fassbender    17288
+    ##  2 Vin Diesel            12835
+    ##  3 Ryan Kwanten         133212
+    ##  4 Rosamund Pike         10882
+    ##  5 Elisabeth Röhm       126932
+    ##  6 Lena Headey           17286
+    ##  7 Bonnie Aarons         87287
+    ##  8 Emilia Clarke       1223786
+    ##  9 Jimmi Simpson         22125
+    ## 10 Tessa Thompson        62561
 
 After filtering I’ve narrowed the pool down to the top 734 actors. A
 sample of this pool should show more recognizable names.
@@ -602,7 +618,7 @@ non_supers <- top_pop_perf %>%
 (super_perc <- percent(1 - nrow(non_supers) / nrow(top_pop_perf)))
 ```
 
-    ## [1] "31%"
+    ## [1] "30%"
 
 ``` r
 non_supers %>% 
@@ -612,21 +628,21 @@ non_supers %>%
     ## # A tibble: 15 x 2
     ##    actor             actor_id
     ##    <chr>                <int>
-    ##  1 Dylan Minnette      112476
-    ##  2 Helen Mirren         15735
-    ##  3 Jessie T. Usher     198847
-    ##  4 Robert Forster        5694
-    ##  5 Mary Mouser        1223084
-    ##  6 David Schwimmer      14409
-    ##  7 Hermione Corfield  1345419
-    ##  8 Julia Winter          1286
-    ##  9 Odette Annable       51992
-    ## 10 Lee Byung-hun        25002
-    ## 11 Natalie Martinez     76511
-    ## 12 Thomas Elms        1780950
-    ## 13 Rachelle Lefevre     58168
-    ## 14 Jake Choi          1474019
-    ## 15 Geraldine James      11855
+    ##  1 Kevin Nash          135352
+    ##  2 Jessica De Gouw    1196822
+    ##  3 Anton Yelchin        21028
+    ##  4 Ann-Margret          13567
+    ##  5 Nick Robinson      1108907
+    ##  6 Millie Davis       1274210
+    ##  7 Rufus Sewell         17328
+    ##  8 Alexander Calvert  1077775
+    ##  9 Bob Morley          127733
+    ## 10 Loretta Devine       18284
+    ## 11 Richard Kind         21125
+    ## 12 Eduardo Franco     1653235
+    ## 13 Li Bingbing         109432
+    ## 14 Virginia Madsen      12519
+    ## 15 Abigail Breslin      17140
 
 ``` r
 top_pop_perf %>% 
@@ -634,14 +650,14 @@ top_pop_perf %>%
 ```
 
     ## # A tibble: 3 x 2
-    ##   actor           actor_id
-    ##   <chr>              <int>
-    ## 1 Ben Mendelsohn     77335
-    ## 2 James Frain        22063
-    ## 3 Anthony Hopkins     4173
+    ##   actor              actor_id
+    ##   <chr>                 <int>
+    ## 1 Laura Surrich       1949148
+    ## 2 Emmanuelle Vaugier     2684
+    ## 3 Maria Bello              49
 
 After a little work I have my very rough estimate of how many popular
-actors have been in a superhero film, 31%. So roughly 1 out of every 3
+actors have been in a superhero film, 30%. So roughly 1 out of every 3
 popular actors is a pretty big proportion. Throughout this process I
 noticed some exceptions that seemed to crop up. Eva Mendes is
 categorized as a non-super but she starred in 2007’s <i>Ghost Rider</i>,
