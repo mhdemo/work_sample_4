@@ -543,17 +543,17 @@ pop_actors %>%
   slice_sample(n = 10)
 ```
 
-    ##    popularity             name
-    ## 1       3.395   Barry Bostwick
-    ## 2       3.095      Mark Webber
-    ## 3       4.446  Wallace Langham
-    ## 4       3.078    Olivia Pascal
-    ## 5       3.503   Pierre Richard
-    ## 6       3.057    Trezzo Mahoro
-    ## 7       8.237       Jared Leto
-    ## 8       4.727      Gareth Hunt
-    ## 9       4.760 Hakeem Kae-Kazim
-    ## 10      4.431 Cassandra Scerbo
+    ##    popularity                 name
+    ## 1       5.161        Richard Coyle
+    ## 2       4.028        Brett Rickaby
+    ## 3       3.787      Benjamin Cattan
+    ## 4       3.332           Terry Chen
+    ## 5       3.642      Meadow Williams
+    ## 6       9.400        Nikolaj Groth
+    ## 7       3.779       Tobias Jelinek
+    ## 8       6.346         Maia Brewton
+    ## 9       3.245            Lana Wood
+    ## 10      3.011 Pilar López de Ayala
 
 This list is great but it contains some popular people that I don’t
 want. I only want to focus current, popular, movie actors. I decided to
@@ -595,16 +595,16 @@ top_pop_perf %>%
     ## # A tibble: 10 x 2
     ##    actor                 actor_id
     ##    <chr>                    <int>
-    ##  1 Matt Bomer               66743
-    ##  2 Paula Patton             52851
-    ##  3 Alice Krige               2506
-    ##  4 Eddie Redmayne           37632
-    ##  5 Jet Li                    1336
-    ##  6 Chris Hemsworth          74568
-    ##  7 Aimee Carrero          1224238
-    ##  8 Nick Robinson          1108907
-    ##  9 Jean-Claude Van Damme    15111
-    ## 10 Sarah Dumont           1223438
+    ##  1 Eliza Taylor           1213278
+    ##  2 Steve Austin             77120
+    ##  3 Olwen Catherine Kelly  1422264
+    ##  4 Natalia Dyer           1039011
+    ##  5 Cole Sprouse             56730
+    ##  6 Gwyneth Paltrow          12052
+    ##  7 Cillian Murphy            2037
+    ##  8 Lillian Doucet-Roche   1988801
+    ##  9 Ritu Arya              1742596
+    ## 10 Florence Pugh          1373737
 
 After filtering I’ve narrowed the pool down to the top 734 actors. A
 sample of this pool should show more recognizable names.
@@ -628,35 +628,36 @@ non_supers %>%
 ```
 
     ## # A tibble: 15 x 2
-    ##    actor                 actor_id
-    ##    <chr>                    <int>
-    ##  1 David Strathairn         11064
-    ##  2 Sandra Bullock           18277
-    ##  3 Craig Robinson           64342
-    ##  4 Ritu Arya              1742596
-    ##  5 Thandie Newton            9030
-    ##  6 Nikolaj Coster-Waldau    12795
-    ##  7 Michelle Dockery         70904
-    ##  8 Sydney Sweeney          115440
-    ##  9 Martha Higareda          55392
-    ## 10 Bob Morley              127733
-    ## 11 Emily Mortimer            1246
-    ## 12 Léa Seydoux             121529
-    ## 13 Millie Davis           1274210
-    ## 14 Jodie Whittaker          66431
-    ## 15 Emily Watson              1639
+    ##    actor                  actor_id
+    ##    <chr>                     <int>
+    ##  1 Dominique McElligott     115146
+    ##  2 Tom Glynn-Carney        1765227
+    ##  3 Loretta Devine            18284
+    ##  4 Amanda Schull             65871
+    ##  5 Ruby O. Fee              229396
+    ##  6 Andy Samberg              62861
+    ##  7 Olwen Catherine Kelly   1422264
+    ##  8 Luke Newton             1794961
+    ##  9 Paige Turco               74932
+    ## 10 Marcia Gay Harden          4726
+    ## 11 Tyler Hoechlin            78198
+    ## 12 Philip Seymour Hoffman     1233
+    ## 13 Natalia Dyer            1039011
+    ## 14 Olivia d'Abo              46423
+    ## 15 Maggie Grace              11825
 
 ``` r
 top_pop_perf %>% 
-  slice_sample(n = 3)
+  slice_sample(n = 4)
 ```
 
-    ## # A tibble: 3 x 2
-    ##   actor            actor_id
-    ##   <chr>               <int>
-    ## 1 Danielle Bisutti   154839
-    ## 2 Gong Li               643
-    ## 3 Danielle Nicolet   101060
+    ## # A tibble: 4 x 2
+    ##   actor               actor_id
+    ##   <chr>                  <int>
+    ## 1 Emily Blunt             5081
+    ## 2 Haley Lu Richardson  1286328
+    ## 3 Alec Baldwin            7447
+    ## 4 Blake Lively           59175
 
 After a little work I have my very rough estimate of how many popular
 actors have been in a superhero film, 30%. So roughly 1 out of every 3

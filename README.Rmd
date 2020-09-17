@@ -384,7 +384,7 @@ non_supers %>%
   slice_sample(n = 15)
 
 top_pop_perf %>% 
-  slice_sample(n = 3)
+  slice_sample(n = 4)
 
 ```
 
