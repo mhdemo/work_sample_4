@@ -38,10 +38,12 @@ been in a superhero movie. Stan Lee was a very busy man.
 
 All of the data used in this analysis, will be queried from The Movie
 Database. This site offers an API that is free to access with no rate
-limiting. More information on the TMDb API can be found on their fact
-page.
-
-[TBDb API Documentation](https://www.themoviedb.org/documentation/api)
+limiting. More information can be found on the TMDb API [documentation
+page](https://www.themoviedb.org/documentation/api). An unofficial [TMDb
+package](https://www.rdocumentation.org/packages/TMDb/versions/1.1) is
+also available that provides an R ready interface to the API, but I
+chose to create the queries on my own to better understand how they
+work.
 
 ## Packages
 
@@ -541,17 +543,17 @@ pop_actors %>%
   slice_sample(n = 10)
 ```
 
-    ##    popularity            name
-    ## 1       3.080       Chung Fat
-    ## 2       5.696       Hal Ozsan
-    ## 3       3.297   Robert Loggia
-    ## 4       3.641    Karl Johnson
-    ## 5       3.198    Shera Danese
-    ## 6       3.832    Tyrone Power
-    ## 7       3.759 DeForest Kelley
-    ## 8       4.690   Rafael Edholm
-    ## 9       9.619     Gary Oldman
-    ## 10      3.581    Gerard Horan
+    ##    popularity             name
+    ## 1       3.395   Barry Bostwick
+    ## 2       3.095      Mark Webber
+    ## 3       4.446  Wallace Langham
+    ## 4       3.078    Olivia Pascal
+    ## 5       3.503   Pierre Richard
+    ## 6       3.057    Trezzo Mahoro
+    ## 7       8.237       Jared Leto
+    ## 8       4.727      Gareth Hunt
+    ## 9       4.760 Hakeem Kae-Kazim
+    ## 10      4.431 Cassandra Scerbo
 
 This list is great but it contains some popular people that I don’t
 want. I only want to focus current, popular, movie actors. I decided to
@@ -591,18 +593,18 @@ top_pop_perf %>%
 ```
 
     ## # A tibble: 10 x 2
-    ##    actor              actor_id
-    ##    <chr>                 <int>
-    ##  1 Michael Fassbender    17288
-    ##  2 Vin Diesel            12835
-    ##  3 Ryan Kwanten         133212
-    ##  4 Rosamund Pike         10882
-    ##  5 Elisabeth Röhm       126932
-    ##  6 Lena Headey           17286
-    ##  7 Bonnie Aarons         87287
-    ##  8 Emilia Clarke       1223786
-    ##  9 Jimmi Simpson         22125
-    ## 10 Tessa Thompson        62561
+    ##    actor                 actor_id
+    ##    <chr>                    <int>
+    ##  1 Matt Bomer               66743
+    ##  2 Paula Patton             52851
+    ##  3 Alice Krige               2506
+    ##  4 Eddie Redmayne           37632
+    ##  5 Jet Li                    1336
+    ##  6 Chris Hemsworth          74568
+    ##  7 Aimee Carrero          1224238
+    ##  8 Nick Robinson          1108907
+    ##  9 Jean-Claude Van Damme    15111
+    ## 10 Sarah Dumont           1223438
 
 After filtering I’ve narrowed the pool down to the top 734 actors. A
 sample of this pool should show more recognizable names.
@@ -626,23 +628,23 @@ non_supers %>%
 ```
 
     ## # A tibble: 15 x 2
-    ##    actor             actor_id
-    ##    <chr>                <int>
-    ##  1 Kevin Nash          135352
-    ##  2 Jessica De Gouw    1196822
-    ##  3 Anton Yelchin        21028
-    ##  4 Ann-Margret          13567
-    ##  5 Nick Robinson      1108907
-    ##  6 Millie Davis       1274210
-    ##  7 Rufus Sewell         17328
-    ##  8 Alexander Calvert  1077775
-    ##  9 Bob Morley          127733
-    ## 10 Loretta Devine       18284
-    ## 11 Richard Kind         21125
-    ## 12 Eduardo Franco     1653235
-    ## 13 Li Bingbing         109432
-    ## 14 Virginia Madsen      12519
-    ## 15 Abigail Breslin      17140
+    ##    actor                 actor_id
+    ##    <chr>                    <int>
+    ##  1 David Strathairn         11064
+    ##  2 Sandra Bullock           18277
+    ##  3 Craig Robinson           64342
+    ##  4 Ritu Arya              1742596
+    ##  5 Thandie Newton            9030
+    ##  6 Nikolaj Coster-Waldau    12795
+    ##  7 Michelle Dockery         70904
+    ##  8 Sydney Sweeney          115440
+    ##  9 Martha Higareda          55392
+    ## 10 Bob Morley              127733
+    ## 11 Emily Mortimer            1246
+    ## 12 Léa Seydoux             121529
+    ## 13 Millie Davis           1274210
+    ## 14 Jodie Whittaker          66431
+    ## 15 Emily Watson              1639
 
 ``` r
 top_pop_perf %>% 
@@ -650,11 +652,11 @@ top_pop_perf %>%
 ```
 
     ## # A tibble: 3 x 2
-    ##   actor              actor_id
-    ##   <chr>                 <int>
-    ## 1 Laura Surrich       1949148
-    ## 2 Emmanuelle Vaugier     2684
-    ## 3 Maria Bello              49
+    ##   actor            actor_id
+    ##   <chr>               <int>
+    ## 1 Danielle Bisutti   154839
+    ## 2 Gong Li               643
+    ## 3 Danielle Nicolet   101060
 
 After a little work I have my very rough estimate of how many popular
 actors have been in a superhero film, 30%. So roughly 1 out of every 3

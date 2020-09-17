@@ -18,9 +18,7 @@ All of the code used to conduct this analysis will be available in this reposito
 Superhero movies have become more expensive, profitable, and abundant over the last 15 years. Nearly 1 in every 3 active famous actors has been in a superhero movie. Stan Lee was a very busy man.
 
 ## TMDb API 
-All of the data used in this analysis, will be queried from The Movie Database. This site offers an API that is free to access with no rate limiting. More information on the TMDb API can be found on their fact page.
-
-[TBDb API Documentation](https://www.themoviedb.org/documentation/api)
+All of the data used in this analysis, will be queried from The Movie Database. This site offers an API that is free to access with no rate limiting. More information can be found on the TMDb API [documentation page](https://www.themoviedb.org/documentation/api). An unofficial [TMDb package](https://www.rdocumentation.org/packages/TMDb/versions/1.1) is also available that provides an R ready interface to the API, but I chose to create the queries on my own to better understand how they work.
 
 ## Packages
 ```{r, message=FALSE}
